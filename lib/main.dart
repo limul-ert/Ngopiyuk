@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/home_page.dart';
+import 'pages/login_page.dart';
 
 void main() {
   runApp(const NgopiYukApp());
@@ -22,7 +22,7 @@ class NgopiYukApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: const LoginPage(),   // ← INI KUNCINYA
     );
   }
 }

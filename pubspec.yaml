@@ -1,5 +1,5 @@
 name: ngopi_yuk
-description: "Aplikasi Discovery Kafe Madiun - Tugas UTS Flutter"
+description: "Aplikasi Discovery Cafe Madiun - Tugas UTS Flutter"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -11,6 +11,7 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   url_launcher: ^6.3.0
+  shared_preferences: ^2.3.2
 
 dev_dependencies:
   flutter_test:
@@ -19,3 +20,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/images/kopi.png
