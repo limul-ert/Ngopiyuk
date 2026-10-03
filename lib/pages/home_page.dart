@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/dummy_cafes.dart';
@@ -21,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   String _selectedCategory = 'All';
   String _userName = 'User';
   String _userAvatar = '😀';
+  Uint8List? _avatarImageBytes;
 
   // ===== STATE FAVORIT =====
   final Set<String> _favoriteCafeNames = {};
@@ -39,10 +42,41 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
+
+    // Baca foto dari base64
+    final avatarBase64 = prefs.getString('user_avatar_base64');
+    Uint8List? bytes;
+    if (avatarBase64 != null && avatarBase64.isNotEmpty) {
+      try {
+        bytes = base64Decode(avatarBase64);
+      } catch (_) {
+        bytes = null;
+      }
+    }
+
     setState(() {
       _userName = prefs.getString('user_name') ?? 'User';
       _userAvatar = prefs.getString('user_avatar') ?? '😀';
+      _avatarImageBytes = bytes;
     });
+  }
+
+  // ===== AVATAR CONTENT (FOTO ATAU EMOJI) =====
+  Widget _buildAvatarContent() {
+    if (_avatarImageBytes != null) {
+      return ClipOval(
+        child: Image.memory(
+          _avatarImageBytes!,
+          width: 44,
+          height: 44,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+    return Text(
+      _userAvatar,
+      style: const TextStyle(fontSize: 24),
+    );
   }
 
   // ===== GETTERS =====
@@ -121,7 +155,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ProfilePage()),
-    ).then((_) => _loadUserData()); // ← reload nama & avatar setelah balik
+    ).then((_) => _loadUserData());
   }
 
   void _openSearch() {
@@ -202,7 +236,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           Row(
             children: [
-              // ===== AVATAR EMOJI (DARI PREFS) =====
+              // ===== AVATAR (FOTO ATAU EMOJI) =====
               GestureDetector(
                 onTap: _openProfile,
                 child: Container(
@@ -214,14 +248,12 @@ class _HomePageState extends State<HomePage> {
                     border: Border.all(color: primaryColor, width: 1.5),
                   ),
                   alignment: Alignment.center,
-                  child: Text(
-                    _userAvatar,
-                    style: const TextStyle(fontSize: 24),
-                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: _buildAvatarContent(),
                 ),
               ),
               const SizedBox(width: 12),
-              // Greeting (nama dinamis dari prefs)
+              // Greeting
               Expanded(
                 child: Text(
                   'Halo, $_userName!',
@@ -336,6 +368,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // ===== SECTION TITLE =====
   Widget _buildSectionTitle(String title, {bool showViewAll = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -367,6 +400,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // ===== LIST SEMUA CAFE =====
   Widget _buildCafeList() {
     final cafes = _filteredCafes;
 
@@ -401,6 +435,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // ===== DRAWER =====
   Widget _buildDrawer() {
     return Drawer(
       backgroundColor: bgColor,
