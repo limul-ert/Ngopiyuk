@@ -11,6 +11,7 @@ import 'cafe_detail_page.dart';
 import 'favorites_page.dart';
 import 'profile_page.dart';
 import 'search_page.dart';
+import 'cafe_list_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -38,12 +39,20 @@ class _HomePageState extends State<HomePage> {
     _loadUserData();
   }
 
-  // ===== BACA NAMA & AVATAR DARI SHARED PREFERENCES =====
+  // ===== GREETING DINAMIS =====
+  String get _greeting {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 11) return 'Selamat Pagi';
+    if (hour >= 11 && hour < 15) return 'Selamat Siang';
+    if (hour >= 15 && hour < 18) return 'Selamat Sore';
+    return 'Selamat Malam';
+  }
+
+  // ===== BACA NAMA & AVATAR =====
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
 
-    // Baca foto dari base64
     final avatarBase64 = prefs.getString('user_avatar_base64');
     Uint8List? bytes;
     if (avatarBase64 != null && avatarBase64.isNotEmpty) {
@@ -61,7 +70,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // ===== AVATAR CONTENT (FOTO ATAU EMOJI) =====
+  // ===== AVATAR CONTENT =====
   Widget _buildAvatarContent() {
     if (_avatarImageBytes != null) {
       return ClipOval(
@@ -170,8 +179,37 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // ===== BUKA HALAMAN CAFE LIST =====
+  void _openTopRatedPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CafeListPage(
+          title: 'Rating Tertinggi',
+          cafes: _topRatedCafes,
+          favoriteCafeNames: _favoriteCafeNames,
+          onToggleFavorite: _toggleFavorite,
+        ),
+      ),
+    );
+  }
+
+  void _openAllCafesPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CafeListPage(
+          title: 'Semua Cafe',
+          cafes: _filteredCafes,
+          favoriteCafeNames: _favoriteCafeNames,
+          onToggleFavorite: _toggleFavorite,
+        ),
+      ),
+    );
+  }
+
   void _showComingSoon(String title) {
-    _showSnackBar('$title - Coming Soon');
+    _showSnackBar('$title - Segera Hadir');
   }
 
   @override
@@ -188,7 +226,12 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 16),
               PromoCarousel(promos: dummyPromos),
               const SizedBox(height: 24),
-              _buildSectionTitle('Rating Tertinggi', showViewAll: true),
+
+              // ===== RATING TERTINGGI =====
+              _buildSectionTitle(
+                'Rating Tertinggi',
+                onViewAll: _openTopRatedPage,
+              ),
               const SizedBox(height: 12),
               SizedBox(
                 height: 200,
@@ -206,6 +249,8 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 24),
+
+              // ===== KATEGORI =====
               _buildSectionTitle('Kategori'),
               const SizedBox(height: 12),
               CategoryRow(
@@ -216,7 +261,12 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               const SizedBox(height: 24),
-              _buildSectionTitle('Semua Cafe', showViewAll: true),
+
+              // ===== SEMUA CAFE (max 8) =====
+              _buildSectionTitle(
+                'Semua Cafe',
+                onViewAll: _openAllCafesPage,
+              ),
               const SizedBox(height: 12),
               _buildCafeList(),
               const SizedBox(height: 24),
@@ -236,7 +286,6 @@ class _HomePageState extends State<HomePage> {
         children: [
           Row(
             children: [
-              // ===== AVATAR (FOTO ATAU EMOJI) =====
               GestureDetector(
                 onTap: _openProfile,
                 child: Container(
@@ -253,10 +302,10 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(width: 12),
-              // Greeting
+              // Greeting dinamis (tanpa emoji)
               Expanded(
                 child: Text(
-                  'Halo, $_userName!',
+                  '$_greeting, $_userName!',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -266,7 +315,7 @@ class _HomePageState extends State<HomePage> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // Icon Favorit
+              // Favorit
               Container(
                 width: 40,
                 height: 40,
@@ -311,7 +360,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              // Icon Notifikasi
+              // Notifikasi
               Container(
                 width: 40,
                 height: 40,
@@ -329,7 +378,6 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const SizedBox(height: 14),
-          // Search bar
           GestureDetector(
             onTap: _openSearch,
             child: Container(
@@ -369,7 +417,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ===== SECTION TITLE =====
-  Widget _buildSectionTitle(String title, {bool showViewAll = false}) {
+  Widget _buildSectionTitle(String title, {VoidCallback? onViewAll}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -383,9 +431,9 @@ class _HomePageState extends State<HomePage> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          if (showViewAll)
+          if (onViewAll != null)
             TextButton(
-              onPressed: () => _showComingSoon(title),
+              onPressed: onViewAll,
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 minimumSize: const Size(0, 30),
@@ -400,11 +448,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ===== LIST SEMUA CAFE =====
+  // ===== LIST CAFE (MAX 8) =====
   Widget _buildCafeList() {
-    final cafes = _filteredCafes;
+    final allCafes = _filteredCafes;
 
-    if (cafes.isEmpty) {
+    if (allCafes.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(40),
         child: Center(
@@ -421,6 +469,9 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     }
+
+    // Ambil max 8 cafe aja buat preview di Home
+    final cafes = allCafes.take(8).toList();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -489,22 +540,6 @@ class _HomePageState extends State<HomePage> {
             onTap: () {
               Navigator.pop(context);
               _openProfile();
-            },
-          ),
-          _buildDrawerItem(
-            Icons.settings_outlined,
-            'Pengaturan',
-            onTap: () {
-              Navigator.pop(context);
-              _showComingSoon('Pengaturan');
-            },
-          ),
-          _buildDrawerItem(
-            Icons.info_outline,
-            'Tentang',
-            onTap: () {
-              Navigator.pop(context);
-              _showComingSoon('Tentang');
             },
           ),
         ],
