@@ -1,514 +1,287 @@
 import '../models/cafe.dart';
 
 // ============================================
-// 20 CAFE REAL MADIUN — dengan 5 menu per cafe
+// 10 CAFE REAL MADIUN — 15 menu per cafe
 // ============================================
 final List<Cafe> dummyCafes = [
-  // ============ 🌿 KATEGORI ALAM & ASRI ============
+// ============ 1. SEA COFFEE ============
+const Cafe(
+name: 'Sea Coffee',
+address:
+'Cagar Budaya Bosbow, Jl. Diponegoro No. 39, Manguharjo, Kec. Manguharjo, Kota Madiun, Jawa Timur 63121',
+phone: '0812-3023-4567',
+description:
+'Kafe dengan konsep rustic-natural dipenuhi tanaman hijau dan kolam. '
+'Nikmati kopi dengan suasana alam yang menenangkan di area cagar budaya.',
+imageUrl: 'https://picsum.photos/seed/seacoffee/600/400',
+rating: 4.7,
+reviewCount: 213,
+openHours: '08.00 - 24.00',
+priceRange: 'Rp 18.000 - Rp 30.000',
+categories: ['Alam', 'Rustic', 'Outdoor'],
+latitude: -7.6240,
+longitude: 111.5180,
+menu: [
+// Minuman
+MenuItem(name: 'Sea Salt Latte', price: 25000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/seasalt/200'),
+MenuItem(name: 'Es Kopi Bosbow', price: 20000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/eskopibos/200'),
+MenuItem(name: 'Berry Blossom', price: 22000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/berryblossom/200'),
+MenuItem(name: 'Cappuccino', price: 22000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/cappwarm/200'),
+MenuItem(name: 'Choco Hazelnut', price: 24000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/chocohazel/200'),
+// Makanan
+MenuItem(name: 'Nasi Goreng Sea Special', price: 28000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/nasgorsea/200'),
+MenuItem(name: 'Rice Bowl Chicken Teriyaki', price: 27000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/ricebowlteri/200'),
+MenuItem(name: 'Spaghetti Carbonara', price: 30000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/spagcarbonara/200'),
+MenuItem(name: 'Chicken Katsu Curry', price: 29000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/katsucurry/200'),
+MenuItem(name: 'Mie Goreng Jawa', price: 23000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/miegorengjawa/200'),
+// Snack
+MenuItem(name: 'French Fries', price: 18000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/fries/200'),
+MenuItem(name: 'Mix Platter', price: 25000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/mixplatter/200'),
+MenuItem(name: 'Cireng Bumbu Rujak', price: 16000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/cirengrujak/200'),
+MenuItem(name: 'Potato Wedges', price: 20000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/potatowedges/200'),
+MenuItem(name: 'Churros Dip Chocolate', price: 20000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/churros/200'),
+],
+),
 
-  // 1. THE FOREST CAFE & D'ARBORETUM
-  const Cafe(
-    name: "The Forest Cafe & D'Arboretum",
-    address: 'Jl. Rimba Karya, Kartoharjo, Madiun',
-    description:
-    'Suasana rimbun di tengah hutan kota Perhutani. Tempat sempurna '
-        'buat healing dan menikmati kopi dengan udara segar.',
-    imageUrl: 'https://picsum.photos/seed/forestcafe/600/400',
-    rating: 4.8,
-    reviewCount: 287,
-    openHours: '08.00 - 21.00',
-    priceRange: 'Rp 18.000 - Rp 25.000',
-    categories: ['Alam', 'Healing', 'Outdoor'],
-    latitude: -7.6350,
-    longitude: 111.5150,
-    menu: [
-      MenuItem(name: 'Forest Signatures', price: 20000,
-          imageUrl: 'https://picsum.photos/seed/forestsig/200'),
-      MenuItem(name: 'Matcha Green Tea Latte', price: 22000,
-          imageUrl: 'https://picsum.photos/seed/matchagreen/200'),
-      MenuItem(name: 'Avocado Coffee', price: 25000,
-          imageUrl: 'https://picsum.photos/seed/avocoffee/200'),
-      MenuItem(name: 'Lychee Ice Tea', price: 18000,
-          imageUrl: 'https://picsum.photos/seed/lycheetea/200'),
-      MenuItem(name: 'Taro Latte', price: 20000,
-          imageUrl: 'https://picsum.photos/seed/tarolatte/200'),
-    ],
-  ),
+// ============ 2. HOLLY CAFE ============
+const Cafe(
+name: 'Holly Cafe',
+address:
+'Jl. Rimba Karya No. 1, Kartoharjo, Kec. Kartoharjo, Kota Madiun, Jawa Timur 63117',
+phone: '0822-4567-8901',
+description:
+'Kafe asri dengan pepohonan rimbun di kawasan Perhutani. '
+'Suasana sejuk, cocok buat healing dan menyegarkan pikiran.',
+imageUrl: 'https://picsum.photos/seed/hollycafe/600/400',
+rating: 4.6,
+reviewCount: 178,
+openHours: '09.00 - 22.00',
+priceRange: 'Rp 15.000 - Rp 32.000',
+categories: ['Alam', 'Healing', 'Outdoor'],
+latitude: -7.6360,
+longitude: 111.5145,
+menu: [
+// Minuman
+MenuItem(name: 'Holly Signature Coffee', price: 22000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/hollysig/200'),
+MenuItem(name: 'Matcha Green Tea', price: 22000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/matchagreen/200'),
+MenuItem(name: 'Peach Tea', price: 18000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/peachtea/200'),
+MenuItem(name: 'Cafe Latte', price: 20000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/cafelatte/200'),
+MenuItem(name: 'Chocolate Ice', price: 20000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/chocoice/200'),
+// Makanan
+MenuItem(name: 'Nasi Goreng Rempah', price: 25000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/nasgorrempah/200'),
+MenuItem(name: 'Rice Bowl Sambal Matah', price: 26000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/ricebowlsambal/200'),
+MenuItem(name: 'Spaghetti Aglio Olio', price: 28000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/spagaglio/200'),
+MenuItem(name: 'Beef Blackpepper Rice', price: 32000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/beefblack/200'),
+MenuItem(name: 'Mie Nyemek Holly', price: 22000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/mienyemek/200'),
+// Snack
+MenuItem(name: 'Tahu Cabe Garam', price: 16000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/tahucabe/200'),
+MenuItem(name: 'Singkong Goreng Keju', price: 15000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/singkongkeju/200'),
+MenuItem(name: 'French Fries & Sausage', price: 22000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/friesausage/200'),
+MenuItem(name: 'Pisang Goreng Karamel', price: 18000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/pisangkaramel/200'),
+MenuItem(name: 'Onion Rings', price: 18000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/onionrings/200'),
+],
+),
 
-  // 2. SEA COFFEE
-  const Cafe(
-    name: 'Sea Coffee',
-    address: 'Jl. Diponegoro (Area Cagar Budaya Bosbow), Manguharjo',
-    description:
-    'Konsep rustic-natural dipenuhi tanaman hijau dan kolam. '
-        'Nikmati kopi dengan suasana alam yang menenangkan.',
-    imageUrl: 'https://picsum.photos/seed/seacoffee/600/400',
-    rating: 4.7,
-    reviewCount: 213,
-    openHours: '08.00 - 24.00',
-    priceRange: 'Rp 20.000 - Rp 25.000',
-    categories: ['Alam', 'Rustic', 'Outdoor'],
-    latitude: -7.6240,
-    longitude: 111.5180,
-    menu: [
-      MenuItem(name: 'Sea Salt Latte', price: 25000,
-          imageUrl: 'https://picsum.photos/seed/seasalt/200'),
-      MenuItem(name: 'Es Kopi Bosbow', price: 20000,
-          imageUrl: 'https://picsum.photos/seed/eskopibos/200'),
-      MenuItem(name: 'Berry Blossom', price: 22000,
-          imageUrl: 'https://picsum.photos/seed/berryblossom/200'),
-      MenuItem(name: 'Cappuccino Warm', price: 22000,
-          imageUrl: 'https://picsum.photos/seed/cappwarm/200'),
-      MenuItem(name: 'Choco Hazelnut', price: 24000,
-          imageUrl: 'https://picsum.photos/seed/chocohazel/200'),
-    ],
-  ),
+// ============ 3. PARATAMU COFFEE ============
+const Cafe(
+name: 'Paratamu Coffee',
+address:
+'Jl. Terate No. 55, Munggut, Kec. Wungu, Kabupaten Madiun, Jawa Timur 63181',
+phone: '0813-5789-0123',
+description:
+'Desain arsitektur modern minimalis dipadu aksen kayu asri. '
+'Setiap sudutnya instagramable banget!',
+imageUrl: 'https://picsum.photos/seed/paratamu/600/400',
+rating: 4.7,
+reviewCount: 198,
+openHours: '09.00 - 23.00',
+priceRange: 'Rp 20.000 - Rp 42.000',
+categories: ['Estetik', 'Minimalis', 'Instagramable'],
+latitude: -7.6480,
+longitude: 111.5420,
+menu: [
+// Minuman
+MenuItem(name: 'Paratamu Aren', price: 28000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/paratamuaren/200'),
+MenuItem(name: 'Butterscotch Latte', price: 37300, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/butterscotch/200'),
+MenuItem(name: 'Peach Blossom Tea', price: 25400, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/peachblossom/200'),
+MenuItem(name: 'Pistachio Cream Latte', price: 33900, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/pistachio/200'),
+MenuItem(name: 'Dark Chocolate', price: 30500, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/darkchoco/200'),
+// Makanan
+MenuItem(name: 'Nasi Daging Sapi Lada Hitam', price: 38000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/nasdaginglada/200'),
+MenuItem(name: 'Chicken Steak Creamy Sauce', price: 42000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/chickensteak/200'),
+MenuItem(name: 'Spaghetti Bolognese', price: 35000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/spagbolo/200'),
+MenuItem(name: 'Nasi Goreng Kecombrang', price: 32000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/nasgorkecom/200'),
+MenuItem(name: 'Rice Bowl Chicken Salted Egg', price: 36000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/ricebowlsalted/200'),
+// Snack
+MenuItem(name: 'Croissant Butter', price: 22000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/croissantbutter/200'),
+MenuItem(name: 'Truffle Fries', price: 25000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/trufflefries/200'),
+MenuItem(name: 'Cinnamon Roll', price: 20000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/cinnamonroll/200'),
+MenuItem(name: 'Chicken Wings BBQ', price: 28000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/wingsbbq/200'),
+MenuItem(name: 'Nachos Cheese Dip', price: 26000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/nachos/200'),
+],
+),
 
-  // 3. SIBITREM MADIUN
-  const Cafe(
-    name: 'Sibitrem Madiun',
-    address: 'Jl. Rimba Karya, Kartoharjo, Madiun',
-    description:
-    'Area outdoor rindang di kawasan Perhutani. Adem, tenang, '
-        'dan cocok buat bersantai jauh dari hiruk pikuk kota.',
-    imageUrl: 'https://picsum.photos/seed/sibitrem/600/400',
-    rating: 4.6,
-    reviewCount: 156,
-    openHours: '09.00 - 23.00',
-    priceRange: 'Rp 12.000 - Rp 20.000',
-    categories: ['Alam', 'Tenang', 'Outdoor'],
-    latitude: -7.6360,
-    longitude: 111.5145,
-    menu: [
-      MenuItem(name: 'Kopi Susu Sibitrem', price: 18000,
-          imageUrl: 'https://picsum.photos/seed/kopisibitrem/200'),
-      MenuItem(name: 'Mango Smoothies', price: 20000,
-          imageUrl: 'https://picsum.photos/seed/mangosmooth/200'),
-      MenuItem(name: 'Lemon Tea Fresh', price: 12000,
-          imageUrl: 'https://picsum.photos/seed/lemontea/200'),
-      MenuItem(name: 'Mocaccino Ice', price: 20000,
-          imageUrl: 'https://picsum.photos/seed/mocaccino/200'),
-      MenuItem(name: 'Red Velvet Ice', price: 20000,
-          imageUrl: 'https://picsum.photos/seed/redvelvetice/200'),
-    ],
-  ),
+// ============ 4. HAKUI COFFEE ============
+const Cafe(
+name: 'Hakui Coffee',
+address:
+'Jl. Rimba Mulya No. 9, Kartoharjo, Kec. Kartoharjo, Kota Madiun, Jawa Timur 63117',
+phone: '0812-9876-5432',
+description:
+'Kafe estetik dengan desain interior modern dan spot foto kekinian. '
+'Cocok buat nongkrong dan konten sosmed.',
+imageUrl: 'https://picsum.photos/seed/hakuicoffee/600/400',
+rating: 4.5,
+reviewCount: 156,
+openHours: '10.00 - 23.00',
+priceRange: 'Rp 18.000 - Rp 38.000',
+categories: ['Estetik', 'Instagramable', 'Indoor'],
+latitude: -7.6355,
+longitude: 111.5230,
+menu: [
+// Minuman
+MenuItem(name: 'Hakui White Cold Brew', price: 26000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/hakuiwhite/200'),
+MenuItem(name: 'Dirty Matcha', price: 28000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/dirtymatcha/200'),
+MenuItem(name: 'Spanish Latte', price: 27000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/spanishlatte/200'),
+MenuItem(name: 'Berry Lemonade', price: 24000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/berrylemonade/200'),
+MenuItem(name: 'Americano Ice', price: 20000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/americanoice/200'),
+// Makanan
+MenuItem(name: 'Chicken Nanban Rice Bowl', price: 32000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/nanban/200'),
+MenuItem(name: 'Nasi Goreng Hakui', price: 28000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/nasgorhakui/200'),
+MenuItem(name: 'Pasta Creamy Mushroom', price: 34000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/pastamushroom/200'),
+MenuItem(name: 'Gyudon Beef Rice Bowl', price: 38000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/gyudon/200'),
+MenuItem(name: 'Katsu Curry Rice', price: 35000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/katsucurryrice/200'),
+// Snack
+MenuItem(name: 'Gyoza Crispy', price: 22000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/gyoza/200'),
+MenuItem(name: 'French Fries Cheese', price: 20000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/friescheese/200'),
+MenuItem(name: 'Waffle Ice Cream', price: 24000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/waffleice/200'),
+MenuItem(name: 'Risoles Mayo (3 pcs)', price: 18000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/risolesmayo/200'),
+MenuItem(name: 'Garlic Bread', price: 18000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/garlicbread/200'),
+],
+),
 
-  // 4. THE CEMILAND
+// ============ 5. WAROENG LATTE ============
+const Cafe(
+name: 'Waroeng Latte',
+address:
+'Jl. H.O.S. Cokroaminoto No. 88, Josenan, Kec. Taman, Kota Madiun, Jawa Timur 63131',
+phone: '0857-1234-5678',
+description:
+'Kafe dengan atap penuh tumbuhan rambat warna-warni. '
+'Cocok buat foto-foto estetik dan santai sore dengan harga terjangkau.',
+imageUrl: 'https://picsum.photos/seed/waroenglatte/600/400',
+rating: 4.6,
+reviewCount: 224,
+openHours: '11.00 - 23.00',
+priceRange: 'Rp 12.000 - Rp 28.000',
+categories: ['Murah'],
+latitude: -7.6280,
+longitude: 111.5270,
+menu: [
+// Minuman
+MenuItem(name: 'Caramel Macchiato', price: 28000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/caramelmac/200'),
+MenuItem(name: 'Hazelnut Coffee Latte', price: 26000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/hazelnutlatte/200'),
+MenuItem(name: 'Greentea Ice Cream Shake', price: 28000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/greenteashake/200'),
+MenuItem(name: 'Blue Citrus Soda', price: 22000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/bluecitrus/200'),
+MenuItem(name: 'Americano On Ice', price: 20000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/americanoice2/200'),
+// Makanan
+MenuItem(name: 'Nasi Goreng Spesial', price: 22000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/nasgorsp/200'),
+MenuItem(name: 'Chicken Rice Bowl Teriyaki', price: 22000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/chickenteri/200'),
+MenuItem(name: 'Mie Goreng Telur', price: 18000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/miegorengtelur/200'),
+MenuItem(name: 'Nasi Ayam Geprek', price: 20000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/ayamgeprek/200'),
+MenuItem(name: 'Kwetiau Goreng Ayam', price: 22000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/kwetiauayam/200'),
+// Snack
+MenuItem(name: 'Jamur Crispy', price: 14000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/jamurcrispy/200'),
+MenuItem(name: 'Tahu Crispy', price: 12000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/tahucrispy/200'),
+MenuItem(name: 'Sosis Goreng', price: 14000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/sosisgoreng/200'),
+MenuItem(name: 'French Fries', price: 15000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/fries2/200'),
+MenuItem(name: 'Roti Bakar Cokelat Keju', price: 16000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/rotibakarcoklat/200'),
+],
+),
+  // ============ 6. LOKATARA COFFEE ============
   const Cafe(
-    name: 'The Cemiland',
-    address: 'Jl. Serayu Timur, Pandean, Taman, Madiun',
+    name: 'Lokatara Coffee',
+    address:
+    'Jl. Mastrip No. 42, Mojorejo, Kec. Taman, Kota Madiun, Jawa Timur 63139',
+    phone: '0821-3456-7890',
     description:
-    'Menyuguhkan pemandangan sawah hijau yang sejuk. Cocok buat '
-        'menikmati senja sambil ngemil dan ngopi santai.',
-    imageUrl: 'https://picsum.photos/seed/cemiland/600/400',
-    rating: 4.5,
-    reviewCount: 178,
-    openHours: '10.00 - 22.00',
-    priceRange: 'Rp 15.000 - Rp 18.000',
-    categories: ['Alam', 'Sawah', 'Healing'],
-    latitude: -7.6420,
-    longitude: 111.5320,
-    menu: [
-      MenuItem(name: 'Kopi Sawah', price: 18000,
-          imageUrl: 'https://picsum.photos/seed/kopisawah/200'),
-      MenuItem(name: 'Es Kelapa Muda Jeruk', price: 15000,
-          imageUrl: 'https://picsum.photos/seed/eskelapajeruk/200'),
-      MenuItem(name: 'Cokelat Klasik Cold', price: 18000,
-          imageUrl: 'https://picsum.photos/seed/coklatklasik/200'),
-      MenuItem(name: 'Strawberry Sparkle', price: 18000,
-          imageUrl: 'https://picsum.photos/seed/strawsparkle/200'),
-      MenuItem(name: 'Teh Tarik Aceh', price: 15000,
-          imageUrl: 'https://picsum.photos/seed/tehtarik/200'),
-    ],
-  ),
-
-  // 5. WARUNG SETASIYUN KAWAK
-  const Cafe(
-    name: 'Warung Setasiyun Kawak',
-    address: 'Jl. Setasiyun Kawak, Madiun',
-    description:
-    'Momen ngopi santai di tepi perlintasan kereta dengan view sawah. '
-        'Suasana tradisional yang bikin kangen kampung halaman.',
-    imageUrl: 'https://picsum.photos/seed/setasiyun/600/400',
+    'Coffee shop dengan harga ramah kantong dan suasana nyaman. '
+        'Tempat favorit mahasiswa buat nugas dan diskusi.',
+    imageUrl: 'https://picsum.photos/seed/lokatara/600/400',
     rating: 4.4,
-    reviewCount: 134,
-    openHours: '09.00 - 22.00',
-    priceRange: 'Rp 8.000 - Rp 15.000',
-    categories: ['Alam', 'Tradisional', 'Sawah'],
-    latitude: -7.6380,
-    longitude: 111.5380,
-    menu: [
-      MenuItem(name: 'Kopi Tubruk Kawak', price: 8000,
-          imageUrl: 'https://picsum.photos/seed/kopikawak/200'),
-      MenuItem(name: 'Es Vedang Jahe Sereh', price: 10000,
-          imageUrl: 'https://picsum.photos/seed/vedangjahe/200'),
-      MenuItem(name: 'Es Kopi Susu Tradisional', price: 12000,
-          imageUrl: 'https://picsum.photos/seed/eskopitrad/200'),
-      MenuItem(name: 'Es Cucur / Es Cendol', price: 12000,
-          imageUrl: 'https://picsum.photos/seed/escendol/200'),
-      MenuItem(name: 'Susu Telur Bebek (STMJ)', price: 15000,
-          imageUrl: 'https://picsum.photos/seed/stmj/200'),
-    ],
-  ),
-
-  // ============ ✨ KATEGORI ESTETIK & INSTAGRAMABLE ============
-
-  // 6. PARATAMU COFFEE
-  const Cafe(
-    name: 'Paratamu Coffee',
-    address: 'Jl. Terate, Manisan, Munggut, Wungu, Madiun',
-    description:
-    'Desain arsitektur modern minimalis dipadu aksen kayu asri. '
-        'Setiap sudutnya instagramable banget!',
-    imageUrl: 'https://picsum.photos/seed/paratamu/600/400',
-    rating: 4.7,
-    reviewCount: 198,
+    reviewCount: 189,
     openHours: '09.00 - 23.00',
-    priceRange: 'Rp 25.000 - Rp 37.000',
-    categories: ['Estetik', 'Minimalis', 'Instagramable'],
-    latitude: -7.6480,
-    longitude: 111.5420,
-    menu: [
-      MenuItem(name: 'Paratamu Aren', price: 28000,
-          imageUrl: 'https://picsum.photos/seed/paratamuaren/200'),
-      MenuItem(name: 'Butterscotch Latte', price: 37300,
-          imageUrl: 'https://picsum.photos/seed/butterscotch/200'),
-      MenuItem(name: 'Peach Blossom Tea', price: 25400,
-          imageUrl: 'https://picsum.photos/seed/peachblossom/200'),
-      MenuItem(name: 'Pistachio Cream Latte', price: 33900,
-          imageUrl: 'https://picsum.photos/seed/pistachio/200'),
-      MenuItem(name: 'Dark Chocolate', price: 30500,
-          imageUrl: 'https://picsum.photos/seed/darkchoco/200'),
-    ],
-  ),
-
-  // 7. WAROENG LATTE
-  const Cafe(
-    name: 'Waroeng Latte',
-    address: 'Jl. H.O.S. Cokroaminoto, Taman, Madiun',
-    description:
-    'Kafe dengan atap penuh tumbuhan rambat warna-warni. '
-        'Cocok buat foto-foto estetik dan santai sore.',
-    imageUrl: 'https://picsum.photos/seed/waroenglatte/600/400',
-    rating: 4.6,
-    reviewCount: 224,
-    openHours: '11.00 - 23.00',
-    priceRange: 'Rp 20.000 - Rp 28.000',
-    categories: ['Estetik', 'Instagramable', 'Indoor'],
-    latitude: -7.6280,
-    longitude: 111.5270,
-    menu: [
-      MenuItem(name: 'Caramel Macchiato', price: 28000,
-          imageUrl: 'https://picsum.photos/seed/caramelmac/200'),
-      MenuItem(name: 'Hazelnut Coffee Latte', price: 26000,
-          imageUrl: 'https://picsum.photos/seed/hazelnutlatte/200'),
-      MenuItem(name: 'Greentea Ice Cream Shake', price: 28000,
-          imageUrl: 'https://picsum.photos/seed/greenteashake/200'),
-      MenuItem(name: 'Blue Citrus Soda', price: 22000,
-          imageUrl: 'https://picsum.photos/seed/bluecitrus/200'),
-      MenuItem(name: 'Americano On Ice', price: 20000,
-          imageUrl: 'https://picsum.photos/seed/americanoice/200'),
-    ],
-  ),
-
-  // 8. HYANG THE LOCAL FINEST
-  const Cafe(
-    name: 'Hyang The Local Finest',
-    address: 'Jl. Terate, Munggut, Madiun',
-    description:
-    'Perpaduan gaya minimalis modern dan sentuhan tradisional. '
-        'Menyajikan hidangan lokal dengan plating premium.',
-    imageUrl: 'https://picsum.photos/seed/hyang/600/400',
-    rating: 4.7,
-    reviewCount: 167,
-    openHours: '10.00 - 22.00',
-    priceRange: 'Rp 22.000 - Rp 25.000',
-    categories: ['Estetik', 'Modern', 'Tradisional'],
-    latitude: -7.6470,
-    longitude: 111.5410,
-    menu: [
-      MenuItem(name: 'Hyang Signature Milk Tea', price: 22000,
-          imageUrl: 'https://picsum.photos/seed/hyangsig/200'),
-      MenuItem(name: 'Kopi Susu Hyang', price: 22000,
-          imageUrl: 'https://picsum.photos/seed/kopihyang/200'),
-      MenuItem(name: 'Artisan White Tea', price: 25000,
-          imageUrl: 'https://picsum.photos/seed/whitetea/200'),
-      MenuItem(name: 'Kopi Pandan', price: 24000,
-          imageUrl: 'https://picsum.photos/seed/kopipandan/200'),
-      MenuItem(name: 'Berry Lime Mocktail', price: 25000,
-          imageUrl: 'https://picsum.photos/seed/berrylime/200'),
-    ],
-  ),
-
-  // 9. DJOHN COFFEE MADIUN
-  const Cafe(
-    name: 'Djohn Coffee Madiun',
-    address: 'Jl. Mojopahit, Mojorejo, Taman, Madiun',
-    description:
-    'Konsep vintage modern dengan spot foto estetik dan live music. '
-        'Tempat nongkrong favorit anak muda Madiun.',
-    imageUrl: 'https://picsum.photos/seed/djohn/600/400',
-    rating: 4.6,
-    reviewCount: 245,
-    openHours: '15.00 - 23.00',
-    priceRange: 'Rp 22.000 - Rp 26.000',
-    categories: ['Estetik', 'Vintage', 'Live Music'],
-    latitude: -7.6260,
+    priceRange: 'Rp 12.000 - Rp 22.000',
+    categories: ['Murah', 'Nugas', 'WiFi Cepat'],
+    latitude: -7.6265,
     longitude: 111.5280,
     menu: [
-      MenuItem(name: 'Djohn Signature Aren', price: 22000,
-          imageUrl: 'https://picsum.photos/seed/djohnaren/200'),
-      MenuItem(name: 'Rum Raisin Latte', price: 25000,
-          imageUrl: 'https://picsum.photos/seed/rumraisin/200'),
-      MenuItem(name: 'Matcha Espresso Fusion', price: 26000,
-          imageUrl: 'https://picsum.photos/seed/matchafusion/200'),
-      MenuItem(name: 'Fresh Virgin Mojito', price: 22000,
-          imageUrl: 'https://picsum.photos/seed/virginmojito/200'),
-      MenuItem(name: 'Choco Vanilla Milkshake', price: 25000,
-          imageUrl: 'https://picsum.photos/seed/chocovanilla/200'),
+      // Minuman
+      MenuItem(name: 'Es Kopi Lokatara', price: 18000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/eskopiloka/200'),
+      MenuItem(name: 'Taro Latte', price: 18000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/tarolatte/200'),
+      MenuItem(name: 'Red Velvet', price: 18000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/redvelvet/200'),
+      MenuItem(name: 'Thai Tea', price: 15000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/thaitea/200'),
+      MenuItem(name: 'Lemon Tea Ice', price: 12000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/lemonteaice/200'),
+      // Makanan
+      MenuItem(name: 'Rice Bowl Ayam Sambal Matah', price: 20000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/ricebowlayam/200'),
+      MenuItem(name: 'Nasi Goreng Jawa', price: 18000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/nasgorjawa/200'),
+      MenuItem(name: 'Rice Bowl Egg Chicken Roll', price: 22000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/ricebowlegg/200'),
+      MenuItem(name: 'Indomie Goreng Doppel/Jumbo', price: 15000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/indomiejumbo/200'),
+      MenuItem(name: 'Nasi Ayam Blackpepper', price: 22000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/ayamblack/200'),
+      // Snack
+      MenuItem(name: 'Cireng Crispy', price: 12000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/cirengcrispy/200'),
+      MenuItem(name: 'French Fries Original', price: 14000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/friesorig/200'),
+      MenuItem(name: 'Pisang Cokelat Lumer', price: 15000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/pisangcoklat/200'),
+      MenuItem(name: 'Otak-otak Goreng', price: 13000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/otakotak/200'),
+      MenuItem(name: 'Nugget Goreng', price: 14000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/nugget/200'),
     ],
   ),
 
-  // 10. KOHAN CAFE AND EATERY
+  // ============ 7. WARKOP BREWOK ============
   const Cafe(
-    name: 'Kohan Cafe and Eatery',
-    address: 'Jl. Sulawesi No. 41, Kartoharjo, Madiun',
+    name: 'Warkop Brewok',
+    address:
+    'Jl. Trunojoyo No. 92, Nambangan Kidul, Kec. Manguharjo, Kota Madiun, Jawa Timur 63128',
+    phone: '0813-2345-6789',
     description:
-    'Interior kekinian bernuansa hangat dan nyaman untuk rapat atau nugas. '
-        'Menu makanan lengkap dengan cita rasa tinggi.',
-    imageUrl: 'https://picsum.photos/seed/kohan/600/400',
-    rating: 4.5,
-    reviewCount: 178,
-    openHours: '10.00 - 22.00',
-    priceRange: 'Rp 22.000 - Rp 26.000',
-    categories: ['Estetik', 'Nugas', 'Meeting'],
-    latitude: -7.6300,
-    longitude: 111.5230,
-    menu: [
-      MenuItem(name: 'Kohan Creamy Latte', price: 24000,
-          imageUrl: 'https://picsum.photos/seed/kohanlatte/200'),
-      MenuItem(name: 'Salted Caramel Coffee', price: 26000,
-          imageUrl: 'https://picsum.photos/seed/saltedcaramel/200'),
-      MenuItem(name: 'Earl Grey Milk Tea', price: 22000,
-          imageUrl: 'https://picsum.photos/seed/earlgrey/200'),
-      MenuItem(name: 'Lychee Sparkling Mocktail', price: 24000,
-          imageUrl: 'https://picsum.photos/seed/lycheesparkle/200'),
-      MenuItem(name: 'Vanilla Milk Ice', price: 22000,
-          imageUrl: 'https://picsum.photos/seed/vanillamilk/200'),
-    ],
-  ),
-
-  // ============ 🪙 KATEGORI MURAH & RAMAH KANTONG ============
-
-  // 11. WARUNG NDEMUG
-  const Cafe(
-    name: 'Warung Ndemug',
-    address: 'Jl. Imam Bonjol No. 44, Klegen, Madiun',
-    description:
-    'Menu masakan rumah murah meriah dengan nuansa kayu ramah kantong. '
-        'Porsi besar, harga bersahabat.',
-    imageUrl: 'https://picsum.photos/seed/ndemug/600/400',
-    rating: 4.4,
-    reviewCount: 189,
-    openHours: '09.00 - 23.00',
-    priceRange: 'Rp 5.000 - Rp 12.000',
-    categories: ['Murah', 'Masakan Rumah', 'Tradisional'],
-    latitude: -7.6330,
-    longitude: 111.5260,
-    menu: [
-      MenuItem(name: 'Es Kopi Susu Ndemug', price: 12000,
-          imageUrl: 'https://picsum.photos/seed/eskopindemug/200'),
-      MenuItem(name: 'Es Teh Kampul', price: 6000,
-          imageUrl: 'https://picsum.photos/seed/estehkampul/200'),
-      MenuItem(name: 'Es Nutrisari Jeruk', price: 5000,
-          imageUrl: 'https://picsum.photos/seed/nutrisari/200'),
-      MenuItem(name: 'Kopi Hitam Cangkir', price: 5000,
-          imageUrl: 'https://picsum.photos/seed/kopihitamcangkir/200'),
-      MenuItem(name: 'Susu Kedelai', price: 7000,
-          imageUrl: 'https://picsum.photos/seed/susukedelai/200'),
-    ],
-  ),
-
-  // 12. JIERO WEDANGAN
-  const Cafe(
-    name: 'Jiero Wedangan',
-    address: 'Jl. Bali No. 17, Kartoharjo, Madiun',
-    description:
-    'Konsep angkringan-kedai modern dengan variasi minuman murah. '
-        'Suasana santai cocok buat cerita panjang.',
-    imageUrl: 'https://picsum.photos/seed/jiero/600/400',
+    'Warung kopi dengan cita rasa otentik dan harga merakyat. '
+        'Suasana santai cocok buat cerita panjang sampai malam.',
+    imageUrl: 'https://picsum.photos/seed/brewok/600/400',
     rating: 4.3,
-    reviewCount: 145,
-    openHours: '10.00 - 23.00',
-    priceRange: 'Rp 6.000 - Rp 12.000',
-    categories: ['Murah', 'Angkringan', 'Nongkrong'],
-    latitude: -7.6295,
-    longitude: 111.5210,
-    menu: [
-      MenuItem(name: 'Wedang Uwuh', price: 8000,
-          imageUrl: 'https://picsum.photos/seed/wedanguwuh/200'),
-      MenuItem(name: 'Es Wedang Ronde', price: 12000,
-          imageUrl: 'https://picsum.photos/seed/eskopirond/200'),
-      MenuItem(name: 'Es Susu Cokelat', price: 10000,
-          imageUrl: 'https://picsum.photos/seed/esusucoklat/200'),
-      MenuItem(name: 'Kopi Joss', price: 8000,
-          imageUrl: 'https://picsum.photos/seed/kopijoss/200'),
-      MenuItem(name: 'Teh Manis Jumbo', price: 6000,
-          imageUrl: 'https://picsum.photos/seed/tehmanisjumbo/200'),
-    ],
-  ),
-
-  // 13. ANGKRINGAN RUTE 57
-  const Cafe(
-    name: 'Angkringan Rute 57',
-    address: 'Jl. Mayjen Sungkono, Nambangan Kidul, Madiun',
-    description:
-    'Perpaduan angkringan tradisional dan tempat nongkrong kekinian. '
-        'Buka sampai tengah malam, harga tetap ramah.',
-    imageUrl: 'https://picsum.photos/seed/rute57/600/400',
-    rating: 4.4,
-    reviewCount: 167,
-    openHours: '16.00 - 00.00',
-    priceRange: 'Rp 8.000 - Rp 10.000',
-    categories: ['Murah', 'Angkringan', 'Malam'],
-    latitude: -7.6210,
+    reviewCount: 156,
+    openHours: '10.00 - 24.00',
+    priceRange: 'Rp 6.000 - Rp 16.000',
+    categories: ['Murah', 'Tradisional', 'Nongkrong'],
+    latitude: -7.6235,
     longitude: 111.5240,
     menu: [
-      MenuItem(name: 'Es Kopi Jos', price: 8000,
-          imageUrl: 'https://picsum.photos/seed/eskopijos/200'),
-      MenuItem(name: 'Es Susu Jahe', price: 10000,
-          imageUrl: 'https://picsum.photos/seed/esusujahe/200'),
-      MenuItem(name: 'Teh Tarik Ice', price: 10000,
-          imageUrl: 'https://picsum.photos/seed/tehtarikice/200'),
-      MenuItem(name: 'Wedang Sereh Lemon', price: 8000,
-          imageUrl: 'https://picsum.photos/seed/serehlemon/200'),
-      MenuItem(name: 'Es Good Day Freeze', price: 8000,
-          imageUrl: 'https://picsum.photos/seed/goodday/200'),
+      // Minuman
+      MenuItem(name: 'Kopi Tubruk Brewok', price: 6000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/kopibrewok/200'),
+      MenuItem(name: 'Es Kopi Susu Kampung', price: 10000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/eskopikampung/200'),
+      MenuItem(name: 'Es Teh Kampul', price: 6000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/estehkampul/200'),
+      MenuItem(name: 'Es Extra Joss Susu', price: 8000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/extrajoss/200'),
+      MenuItem(name: 'Wedang Jahe', price: 7000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/wedangjahe/200'),
+      // Makanan
+      MenuItem(name: 'Mie Instant Kornet Telur (Internet)', price: 14000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/mieinternet/200'),
+      MenuItem(name: 'Nasi Oreg Tempe Telur', price: 12000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/nasoreg/200'),
+      MenuItem(name: 'Nasi Magelangan', price: 15000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/nasmagelangan/200'),
+      MenuItem(name: 'Nasi Ayam Geprek Sambal Bawang', price: 16000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/geprekbawang/200'),
+      MenuItem(name: 'Kwetiau Kuah Telur', price: 15000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/kwetiaukuah/200'),
+      // Snack
+      MenuItem(name: 'Mendoan Anget (5 pcs)', price: 10000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/mendoan/200'),
+      MenuItem(name: 'Tahu Walik', price: 12000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/tahuwalik/200'),
+      MenuItem(name: 'Bakwan Jagung', price: 10000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/bakwanjagung/200'),
+      MenuItem(name: 'Pisang Goreng Ori', price: 10000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/pisanggoreng/200'),
+      MenuItem(name: 'Sosis Bakar Jumbo', price: 12000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/sosisbakar/200'),
     ],
   ),
 
-  // 14. CAFE UPSIDE DOWN
+  // ============ 8. TOMORO COFFEE ============
   const Cafe(
-    name: 'Cafe Upside Down',
-    address: 'Jl. Taman Praja No. 26, Taman, Madiun',
-    description:
-    'Area outdoor bean bag santai dengan harga ramah mahasiswa. '
-        'Tempat rebahan sambil ngopi dan nonton langit.',
-    imageUrl: 'https://picsum.photos/seed/upsidedown/600/400',
-    rating: 4.5,
-    reviewCount: 198,
-    openHours: '10.00 - 22.00',
-    priceRange: 'Rp 10.000 - Rp 15.000',
-    categories: ['Murah', 'Outdoor', 'Santai'],
-    latitude: -7.6255,
-    longitude: 111.5290,
-    menu: [
-      MenuItem(name: 'Iced Mochaccino Murah', price: 15000,
-          imageUrl: 'https://picsum.photos/seed/mochamurah/200'),
-      MenuItem(name: 'Thai Tea Ice', price: 12000,
-          imageUrl: 'https://picsum.photos/seed/thaiteaice/200'),
-      MenuItem(name: 'Taro Ice Boba', price: 15000,
-          imageUrl: 'https://picsum.photos/seed/taroboba/200'),
-      MenuItem(name: 'Strawberry Tea', price: 10000,
-          imageUrl: 'https://picsum.photos/seed/strawtea/200'),
-      MenuItem(name: 'Kopi Susu Tubruk', price: 10000,
-          imageUrl: 'https://picsum.photos/seed/kopitubruk/200'),
-    ],
-  ),
-
-  // 15. SOCIAL CAFE MADIUN
-  const Cafe(
-    name: 'Social Cafe Madiun',
-    address: 'Jl. Pahlawan (Area Malioboro Madiun)',
-    description:
-    'Terkenal dengan menu porsi besar dan harga terjangkau. '
-        'Tempat kumpul favorit komunitas dan mahasiswa.',
-    imageUrl: 'https://picsum.photos/seed/socialcafe/600/400',
-    rating: 4.4,
-    reviewCount: 234,
-    openHours: '10.00 - 23.00',
-    priceRange: 'Rp 10.000 - Rp 16.000',
-    categories: ['Murah', 'Porsi Besar', 'Komunitas'],
-    latitude: -7.6270,
-    longitude: 111.5225,
-    menu: [
-      MenuItem(name: 'Social Signature Ice Coffee', price: 15000,
-          imageUrl: 'https://picsum.photos/seed/socialsig/200'),
-      MenuItem(name: 'Milky Squash Melon', price: 14000,
-          imageUrl: 'https://picsum.photos/seed/milkysquash/200'),
-      MenuItem(name: 'Iced Lemon Tea Jumbo', price: 10000,
-          imageUrl: 'https://picsum.photos/seed/lemonteajumbo/200'),
-      MenuItem(name: 'Chocolate Ice Blend', price: 16000,
-          imageUrl: 'https://picsum.photos/seed/chocoblend/200'),
-      MenuItem(name: 'Cappuccino Ice', price: 15000,
-          imageUrl: 'https://picsum.photos/seed/cappice/200'),
-    ],
-  ),
-
-  // ============ ⏰ KATEGORI BUKA 24 JAM ============
-
-  // 16. FREEN HOUSE
-  const Cafe(
-    name: 'Freen House',
-    address: 'Jl. Ahmad Yani No. 45, Madiun',
-    description:
-    'Kafe estetik 24 jam dengan Wi-Fi cepat, nyaman untuk working space. '
-        'Colokan banyak dan kopi yang enak.',
-    imageUrl: 'https://picsum.photos/seed/freenhouse/600/400',
-    rating: 4.8,
-    reviewCount: 342,
-    openHours: '24 Jam',
-    priceRange: 'Rp 18.000 - Rp 24.000',
-    categories: ['24 Jam', 'Nugas', 'WiFi Cepat'],
-    latitude: -7.6298,
-    longitude: 111.5239,
-    menu: [
-      MenuItem(name: 'Freen Signature Iced Coffee', price: 20000,
-          imageUrl: 'https://picsum.photos/seed/freensig/200'),
-      MenuItem(name: 'V60 Manual Brew', price: 22000,
-          imageUrl: 'https://picsum.photos/seed/v60/200'),
-      MenuItem(name: 'Choco Creamy Late', price: 22000,
-          imageUrl: 'https://picsum.photos/seed/chocoreamy/200'),
-      MenuItem(name: 'Matcha Cold Foam', price: 24000,
-          imageUrl: 'https://picsum.photos/seed/matchacold/200'),
-      MenuItem(name: 'Americano Cold', price: 18000,
-          imageUrl: 'https://picsum.photos/seed/americancold/200'),
-    ],
-  ),
-
-  // 17. MIDNIGHT COFFEE CORNER
-  const Cafe(
-    name: 'Midnight Coffee Corner',
-    address: 'Jl. Biliton No. 10, Kartoharjo, Madiun',
-    description:
-    'Coffee shop minimalis favorit anak muda buat nugas sampai pagi. '
-        'Buka 24 jam, cocok buat begadang.',
-    imageUrl: 'https://picsum.photos/seed/midnight/600/400',
-    rating: 4.6,
-    reviewCount: 189,
-    openHours: '24 Jam',
-    priceRange: 'Rp 18.000 - Rp 22.000',
-    categories: ['24 Jam', 'Nugas', 'Minimalis'],
-    latitude: -7.6310,
-    longitude: 111.5245,
-    menu: [
-      MenuItem(name: 'Midnight Strong Coffee', price: 18000,
-          imageUrl: 'https://picsum.photos/seed/midstrong/200'),
-      MenuItem(name: 'Iced Caramel Coffee', price: 20000,
-          imageUrl: 'https://picsum.photos/seed/caramelcoffee/200'),
-      MenuItem(name: 'Red Velvet Cream', price: 20000,
-          imageUrl: 'https://picsum.photos/seed/redvelvetcream/200'),
-      MenuItem(name: 'Green Tea Latte', price: 20000,
-          imageUrl: 'https://picsum.photos/seed/greenlatte/200'),
-      MenuItem(name: 'Fresh Watermelon Mojito', price: 22000,
-          imageUrl: 'https://picsum.photos/seed/watermelonmoj/200'),
-    ],
-  ),
-
-  // 18. TOMORO COFFEE - MADIUN STATION
-  const Cafe(
-    name: 'Tomoro Coffee - Madiun Station',
-    address: 'Jl. Kompol Sunaryo No. 14 (Depan Stasiun Madiun)',
+    name: 'Tomoro Coffee (Stasiun Madiun)',
+    address:
+    'Jl. Kompol Sunaryo No. 14, Madiun Lor, Kec. Manguharjo, Kota Madiun, Jawa Timur 63122',
+    phone: '0811-3000-888',
     description:
     'Modern coffee shop dekat stasiun dengan colokan melimpah. '
         'Buka 24 jam, cocok buat nunggu kereta atau WFC.',
@@ -521,74 +294,102 @@ final List<Cafe> dummyCafes = [
     latitude: -7.6180,
     longitude: 111.5250,
     menu: [
-      MenuItem(name: 'Tomoro Aren Latte', price: 18000,
-          imageUrl: 'https://picsum.photos/seed/tomoroaren/200'),
-      MenuItem(name: 'Tomoro Coconut Latte', price: 20000,
-          imageUrl: 'https://picsum.photos/seed/coconutlatte/200'),
-      MenuItem(name: 'Oatside Butterscotch Latte', price: 28000,
-          imageUrl: 'https://picsum.photos/seed/oatside/200'),
-      MenuItem(name: 'Caffe Americano', price: 15000,
-          imageUrl: 'https://picsum.photos/seed/caffeamer/200'),
-      MenuItem(name: 'Pink Pop Lemonade', price: 12000,
-          imageUrl: 'https://picsum.photos/seed/pinkpop/200'),
+      // Minuman
+      MenuItem(name: 'Tomoro Aren Latte', price: 18000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/tomoroaren/200'),
+      MenuItem(name: 'Tomoro Coconut Latte', price: 20000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/coconutlatte/200'),
+      MenuItem(name: 'Oatside Butterscotch Latte', price: 28000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/oatside/200'),
+      MenuItem(name: 'Caffe Americano', price: 15000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/caffeamer/200'),
+      MenuItem(name: 'Pink Pop Lemonade', price: 12000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/pinkpop/200'),
+      // Makanan
+      MenuItem(name: 'Chicken Mayo Toast', price: 22000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/chickenmayo/200'),
+      MenuItem(name: 'Egg & Cheese Toast', price: 18000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/eggcheese/200'),
+      MenuItem(name: 'Smoked Beef Cheese Toast', price: 24000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/smokedbeef/200'),
+      MenuItem(name: 'Tuna Melt Toast', price: 24000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/tunamelt/200'),
+      MenuItem(name: 'Beef Teriyaki Rice Bowl', price: 28000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/beefteri/200'),
+      // Snack
+      MenuItem(name: 'Butter Croissant', price: 18000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/buttercrois/200'),
+      MenuItem(name: 'Pain Au Chocolat', price: 22000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/painauchoc/200'),
+      MenuItem(name: 'Cinnamon Roll', price: 20000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/cinnamon2/200'),
+      MenuItem(name: 'Chocolate Muffin', price: 18000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/chocomuffin/200'),
+      MenuItem(name: 'Almond Croissant', price: 25000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/almondcrois/200'),
     ],
   ),
 
-  // 19. ANGKRINGAN A24
+  // ============ 9. FREEN HOUSE ============
   const Cafe(
-    name: 'Angkringan A24',
-    address: 'Area Pom Bensin Nambangan Lor, Madiun',
+    name: 'Freen House',
+    address:
+    'Jl. Ahmad Yani No. 45, Pangongangan, Kec. Manguharjo, Kota Madiun, Jawa Timur 63121',
+    phone: '0852-9012-3456',
     description:
-    'Tempat nongkrong santai dengan menu angkringan murah meriah. '
-        'Buka 24 jam, cocok buat nongkrong kapan aja.',
-    imageUrl: 'https://picsum.photos/seed/angkringana24/600/400',
-    rating: 4.3,
-    reviewCount: 156,
+    'Kafe estetik 24 jam dengan Wi-Fi cepat, nyaman untuk working space. '
+        'Colokan banyak dan kopi yang enak.',
+    imageUrl: 'https://picsum.photos/seed/freenhouse/600/400',
+    rating: 4.8,
+    reviewCount: 342,
     openHours: '24 Jam',
-    priceRange: 'Rp 5.000 - Rp 8.000',
-    categories: ['24 Jam', 'Murah', 'Angkringan'],
-    latitude: -7.6150,
-    longitude: 111.5220,
+    priceRange: 'Rp 15.000 - Rp 26.000',
+    categories: ['24 Jam', 'Nugas', 'WiFi Cepat'],
+    latitude: -7.6298,
+    longitude: 111.5239,
     menu: [
-      MenuItem(name: 'Kopi Hitam Cangkir A24', price: 5000,
-          imageUrl: 'https://picsum.photos/seed/kopia24/200'),
-      MenuItem(name: 'Wedang Jahe Geprek', price: 7000,
-          imageUrl: 'https://picsum.photos/seed/jahegeprek/200'),
-      MenuItem(name: 'Es Extra Joss Susu', price: 8000,
-          imageUrl: 'https://picsum.photos/seed/extrajoss/200'),
-      MenuItem(name: 'Teh Tubruk Manis', price: 5000,
-          imageUrl: 'https://picsum.photos/seed/tehtubruk/200'),
-      MenuItem(name: 'Susu Putih / Cokelat Panas', price: 7000,
-          imageUrl: 'https://picsum.photos/seed/susupanas/200'),
+      // Minuman
+      MenuItem(name: 'Freen Signature Coffee', price: 20000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/freensig/200'),
+      MenuItem(name: 'V60 Manual Brew', price: 22000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/v60/200'),
+      MenuItem(name: 'Choco Creamy Late', price: 22000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/chocoreamy/200'),
+      MenuItem(name: 'Matcha Cold Foam', price: 24000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/matchacold/200'),
+      MenuItem(name: 'Americano Cold', price: 18000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/americancold/200'),
+      // Makanan
+      MenuItem(name: 'Nasi Goreng Freen', price: 24000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/nasgorfreen/200'),
+      MenuItem(name: 'Rice Bowl Chicken Blackpepper', price: 25000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/ricebowlblack/200'),
+      MenuItem(name: 'Spaghetti Bolognese', price: 26000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/spagbolo2/200'),
+      MenuItem(name: 'Nasi Ayam Crispy Sambal Bawang', price: 22000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/ayamcrispy/200'),
+      MenuItem(name: 'Mie Nyemek Freen', price: 20000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/mienyemekfreen/200'),
+      // Snack
+      MenuItem(name: 'French Fries BBQ', price: 16000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/friesbbq/200'),
+      MenuItem(name: 'Mix Platter', price: 24000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/mixplatter2/200'),
+      MenuItem(name: 'Toast Cokelat Keju', price: 18000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/toastcoklat/200'),
+      MenuItem(name: 'Tahu Crispy Tabur Cabai', price: 15000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/tahucrispycabe/200'),
+      MenuItem(name: 'Pancake Maple Syrup', price: 20000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/pancake/200'),
     ],
   ),
 
-  // 20. ANGKRINGAN KARTU
+  // ============ 10. WARUNK WOW KWB ============
   const Cafe(
-    name: 'Angkringan Kartu',
-    address: 'Selatan Lapangan Gulun, Kartoharjo, Madiun',
+    name: 'Warunk Wow KWB',
+    address:
+    'Jl. Mawar No. 12, Oro-Oro Ombo, Kec. Kartoharjo, Kota Madiun, Jawa Timur 63119',
+    phone: '0812-4900-1122',
     description:
-    'Tempat lesehan favorit anak muda untuk ngobrol santai hingga '
-        'larut malam. Suasana hangat khas angkringan.',
-    imageUrl: 'https://picsum.photos/seed/angkringankartu/600/400',
+    'Warung kekinian yang buka 24 jam dengan menu variatif dan harga murah. '
+        'Tempat nongkrong santai kapan pun kamu mau.',
+    imageUrl: 'https://picsum.photos/seed/warunkwow/600/400',
     rating: 4.4,
-    reviewCount: 178,
+    reviewCount: 198,
     openHours: '24 Jam',
-    priceRange: 'Rp 4.000 - Rp 8.000',
-    categories: ['24 Jam', 'Murah', 'Lesehan'],
-    latitude: -7.6265,
-    longitude: 111.5235,
+    priceRange: 'Rp 10.000 - Rp 30.000',
+    categories: ['24 Jam'],
+    latitude: -7.6320,
+    longitude: 111.5270,
     menu: [
-      MenuItem(name: 'Kopi Jos Arang', price: 7000,
-          imageUrl: 'https://picsum.photos/seed/kopijosarang/200'),
-      MenuItem(name: 'Wedang Rempah Kartu', price: 8000,
-          imageUrl: 'https://picsum.photos/seed/wedangrempah/200'),
-      MenuItem(name: 'Es Teh Manis Mantap', price: 4000,
-          imageUrl: 'https://picsum.photos/seed/estehmantap/200'),
-      MenuItem(name: 'Susu Jahe Merah', price: 8000,
-          imageUrl: 'https://picsum.photos/seed/susujahemerah/200'),
-      MenuItem(name: 'Es Kopi Susu Sederhana', price: 8000,
-          imageUrl: 'https://picsum.photos/seed/eskopisederhana/200'),
+      // Minuman
+      MenuItem(name: 'Es Kopi Susu Wow', price: 18000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/eskopiwow/200'),
+      MenuItem(name: 'Ice Taro Latte', price: 20000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/icetaro/200'),
+      MenuItem(name: 'Lychee Mojito', price: 22000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/lycheemojito/200'),
+      MenuItem(name: 'Es Teh Manis Jumbo', price: 10000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/estehjumbo2/200'),
+      MenuItem(name: 'Choco Ice Blend', price: 20000, category: 'Minuman', imageUrl: 'https://picsum.photos/seed/chocoiceblend/200'),
+      // Makanan
+      MenuItem(name: 'Nasi Goreng Wow Spesial', price: 25000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/nasgorwow/200'),
+      MenuItem(name: 'Nasi Ayam Bakar Madu', price: 28000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/ayambakarmadu/200'),
+      MenuItem(name: 'Rice Bowl Beef Teriyaki', price: 30000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/beefteri2/200'),
+      MenuItem(name: 'Mie Instant Dok-Dok', price: 18000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/miedokdok/200'),
+      MenuItem(name: 'Spaghetti Aglio Olio', price: 25000, category: 'Makanan', imageUrl: 'https://picsum.photos/seed/spagaglio2/200'),
+      // Snack
+      MenuItem(name: 'Roti Bakar Milo Keju', price: 18000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/rotimilokeju/200'),
+      MenuItem(name: 'Tahu Cabe Garam', price: 16000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/tahucabe2/200'),
+      MenuItem(name: 'French Fries', price: 16000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/fries3/200'),
+      MenuItem(name: 'Cireng Salju Bumbu Rujak', price: 15000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/cirengsalju/200'),
+      MenuItem(name: 'Pisang Bakar Cokelat', price: 16000, category: 'Snack', imageUrl: 'https://picsum.photos/seed/pisangbakar/200'),
     ],
   ),
 ];
@@ -599,7 +400,7 @@ final List<Cafe> dummyCafes = [
 final List<Promo> dummyPromos = [
   const Promo(
     title: 'Diskon 30%',
-    subtitle: 'Freen Signature Iced Coffee',
+    subtitle: 'Freen Signature Coffee',
     imageUrl: 'https://picsum.photos/seed/promo1/800/400',
     cafeName: 'Freen House',
   ),
@@ -613,13 +414,13 @@ final List<Promo> dummyPromos = [
     title: 'Paket Nugas',
     subtitle: 'Kopi + Snack Rp 25.000',
     imageUrl: 'https://picsum.photos/seed/promo3/800/400',
-    cafeName: 'Midnight Coffee Corner',
+    cafeName: 'Lokatara Coffee',
   ),
   const Promo(
     title: 'Happy Hour',
     subtitle: 'Diskon 20% jam 3-5 sore',
     imageUrl: 'https://picsum.photos/seed/promo4/800/400',
-    cafeName: "The Forest Cafe & D'Arboretum",
+    cafeName: 'Sea Coffee',
   ),
 ];
 

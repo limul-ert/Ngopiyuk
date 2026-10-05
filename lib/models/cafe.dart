@@ -1,6 +1,7 @@
 class Cafe {
   final String name;
   final String address;
+  final String phone;
   final String description;
   final String imageUrl;
   final double rating;
@@ -15,6 +16,7 @@ class Cafe {
   const Cafe({
     required this.name,
     required this.address,
+    required this.phone,
     required this.description,
     required this.imageUrl,
     required this.rating,
@@ -32,11 +34,13 @@ class MenuItem {
   final String name;
   final int price;
   final String imageUrl;
+  final String category; // 'Minuman', 'Makanan', 'Snack'
 
   const MenuItem({
     required this.name,
     required this.price,
     required this.imageUrl,
+    required this.category,
   });
 }
 
