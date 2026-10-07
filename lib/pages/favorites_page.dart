@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/cafe.dart';
+import '../widgets/cafe_image.dart'; // ← ✅ TAMBAH
 
 class FavoritesPage extends StatelessWidget {
   final List<Cafe> favoriteCafes;
@@ -41,7 +42,7 @@ class FavoritesPage extends StatelessWidget {
     );
   }
 
-  // ===== EMPTY STATE (TANPA ICON) =====
+  // ===== EMPTY STATE =====
   Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
@@ -49,7 +50,6 @@ class FavoritesPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Judul
             const Text(
               'Belum Ada Favorit',
               style: TextStyle(
@@ -59,8 +59,6 @@ class FavoritesPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-
-            // Deskripsi
             const Text(
               'Simpan cafe favoritmu di sini biar gampang\ndicari kapan aja kamu mau ngopi.',
               textAlign: TextAlign.center,
@@ -71,8 +69,6 @@ class FavoritesPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-
-            // Tombol CTA
             ElevatedButton.icon(
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.search, size: 18),
@@ -113,21 +109,12 @@ class FavoritesPage extends StatelessWidget {
           ),
           child: Row(
             children: [
-              ClipRRect(
+              // ===== GAMBAR (REVISI) =====
+              CafeImage(
+                source: cafe.imageUrl,
+                width: 70,
+                height: 70,
                 borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  cafe.imageUrl,
-                  width: 70,
-                  height: 70,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    width: 70,
-                    height: 70,
-                    color: bgColor,
-                    child: const Icon(Icons.local_cafe,
-                        color: primaryColor, size: 24),
-                  ),
-                ),
               ),
               const SizedBox(width: 12),
               Expanded(

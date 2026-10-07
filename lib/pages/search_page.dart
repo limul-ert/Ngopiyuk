@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/dummy_cafes.dart';
 import '../models/cafe.dart';
+import '../widgets/cafe_image.dart'; // ← ✅ TAMBAH
 import 'cafe_detail_page.dart';
 
 class SearchPage extends StatefulWidget {
@@ -210,38 +211,15 @@ class _SearchPageState extends State<SearchPage> {
         ),
         child: Row(
           children: [
-            // Gambar
-            ClipRRect(
+            // ===== GAMBAR (REVISI) =====
+            CafeImage(
+              source: cafe.imageUrl,
+              width: 70,
+              height: 70,
               borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                cafe.imageUrl,
-                width: 70,
-                height: 70,
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return Container(
-                    width: 70,
-                    height: 70,
-                    color: bgColor,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: primaryColor,
-                        strokeWidth: 2,
-                      ),
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) => Container(
-                  width: 70,
-                  height: 70,
-                  color: bgColor,
-                  child: const Icon(Icons.local_cafe,
-                      color: primaryColor, size: 24),
-                ),
-              ),
             ),
             const SizedBox(width: 12),
+
             // Info
             Expanded(
               child: Column(
@@ -303,6 +281,7 @@ class _SearchPageState extends State<SearchPage> {
                 ],
               ),
             ),
+
             // Tombol favorit
             IconButton(
               icon: Icon(

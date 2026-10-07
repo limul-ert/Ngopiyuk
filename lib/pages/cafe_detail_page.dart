@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/cafe.dart';
 import '../providers/cart_provider.dart';
+import '../widgets/cafe_image.dart'; // ← ✅ TAMBAH
 import 'cart_page.dart';
 
 class CafeDetailPage extends StatefulWidget {
@@ -220,14 +221,10 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    cafe.imageUrl,
+                  // ===== HERO IMAGE (REVISI) =====
+                  CafeImage(
+                    source: cafe.imageUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: cardColor,
-                      child: const Icon(Icons.local_cafe,
-                          color: primaryColor, size: 60),
-                    ),
                   ),
                   Container(
                     decoration: BoxDecoration(
@@ -494,22 +491,12 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
           ),
           child: Row(
             children: [
-              // ===== GAMBAR (KIRI) =====
-              ClipRRect(
+              // ===== GAMBAR (KIRI) (REVISI) =====
+              CafeImage(
+                source: item.imageUrl,
+                width: 80,
+                height: 80,
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  item.imageUrl,
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    width: 80,
-                    height: 80,
-                    color: bgColor,
-                    child: const Icon(Icons.local_cafe,
-                        color: primaryColor, size: 28),
-                  ),
-                ),
               ),
               const SizedBox(width: 14),
 

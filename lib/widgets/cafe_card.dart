@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/cafe.dart';
+import 'cafe_image.dart';
 
 // ============================================
 // 1. CARD KAFE UNTUK HORIZONTAL SCROLL
-//    (Rating Tertinggi)
 // ============================================
 class CafeCardHorizontal extends StatelessWidget {
   final Cafe cafe;
@@ -32,42 +32,17 @@ class CafeCardHorizontal extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ===== GAMBAR + NAMA OVERLAY =====
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(14),
               ),
               child: Stack(
                 children: [
-                  Image.network(
-                    cafe.imageUrl,
+                  CafeImage(
+                    source: cafe.imageUrl,
                     height: 110,
                     width: double.infinity,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, progress) {
-                      if (progress == null) return child;
-                      return Container(
-                        height: 110,
-                        color: const Color(0xFF242424),
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFFC8956D),
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 110,
-                      color: const Color(0xFF242424),
-                      child: const Icon(
-                        Icons.local_cafe,
-                        color: Color(0xFFC8956D),
-                        size: 32,
-                      ),
-                    ),
                   ),
-                  // Overlay nama
                   Positioned(
                     left: 0,
                     right: 0,
@@ -99,7 +74,6 @@ class CafeCardHorizontal extends StatelessWidget {
                 ],
               ),
             ),
-            // ===== INFO BAWAH =====
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
               child: Column(
@@ -144,7 +118,6 @@ class CafeCardHorizontal extends StatelessWidget {
 
 // ============================================
 // 2. CARD KAFE UNTUK LIST VERTIKAL
-//    (Semua Kafe)
 // ============================================
 class CafeCardVertical extends StatelessWidget {
   final Cafe cafe;
@@ -172,42 +145,15 @@ class CafeCardVertical extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // ===== GAMBAR =====
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                cafe.imageUrl,
+              child: CafeImage(
+                source: cafe.imageUrl,
                 width: 80,
                 height: 80,
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return Container(
-                    width: 80,
-                    height: 80,
-                    color: const Color(0xFF242424),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFFC8956D),
-                        strokeWidth: 2,
-                      ),
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) => Container(
-                  width: 80,
-                  height: 80,
-                  color: const Color(0xFF242424),
-                  child: const Icon(
-                    Icons.local_cafe,
-                    color: Color(0xFFC8956D),
-                    size: 28,
-                  ),
-                ),
               ),
             ),
             const SizedBox(width: 12),
-            // ===== INFO =====
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
