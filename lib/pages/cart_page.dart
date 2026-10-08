@@ -111,7 +111,7 @@ class CartPage extends StatelessWidget {
   }
 
   // ============================================
-  // EMPTY STATE
+  // EMPTY STATE (TANPA ICON — CLEAN)
   // ============================================
   Widget _buildEmptyState(BuildContext context) {
     return Center(
@@ -120,41 +120,20 @@ class CartPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    primaryColor.withValues(alpha: 0.2),
-                    primaryColor.withValues(alpha: 0.05),
-                  ],
-                ),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: primaryColor.withValues(alpha: 0.2),
-                ),
-              ),
-              child: Icon(
-                Icons.shopping_cart_outlined,
-                color: primaryColor.withValues(alpha: 0.7),
-                size: 52,
-              ),
-            ),
-            const SizedBox(height: 24),
+            // Judul
             const Text(
               'Keranjang Kosong',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
+
+            // Deskripsi
             const Text(
-              'Yuk, mulai pesan menu favoritmu dari cafe-cafe terbaik di Madiun.',
+              'Yuk, mulai pesan menu favoritmu dari\ncafe-cafe terbaik di Madiun.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.grey,
@@ -163,31 +142,22 @@ class CartPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
+
+            // Tombol CTA
+            ElevatedButton.icon(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.search, size: 18),
+              label: const Text('Jelajah Cafe'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.black,
+                elevation: 0,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 28,
                   vertical: 14,
                 ),
-                decoration: BoxDecoration(
-                  color: primaryColor,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.arrow_back, color: Colors.black, size: 18),
-                    SizedBox(width: 8),
-                    Text(
-                      'Jelajah Cafe',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
             ),
