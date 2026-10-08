@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/cafe.dart';
 import '../providers/cart_provider.dart';
-import '../widgets/cafe_image.dart'; // ← ✅ TAMBAH
+import '../widgets/cafe_image.dart';
 import 'cart_page.dart';
 
 class CafeDetailPage extends StatefulWidget {
@@ -100,20 +100,68 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
     );
   }
 
+  // ============================================
+  // BUKA GOOGLE MAPS — PAKAI ALAMAT (AKURAT)
+  // ============================================
   Future<void> _openMaps() async {
+    final cafe = widget.cafe;
+
+    // Prioritaskan pencarian pakai nama + alamat (paling akurat)
+    final query = '${cafe.name}, ${cafe.address}';
+    final encodedQuery = Uri.encodeComponent(query);
+
+    // URL Google Maps universal — bisa buka app di mobile, web di desktop
     final url = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=${widget.cafe.latitude},${widget.cafe.longitude}',
+      'https://www.google.com/maps/search/?api=1&query=$encodedQuery',
     );
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
+
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        // Fallback 1: coba pakai koordinat
+        final fallbackUrl = Uri.parse(
+          'https://www.google.com/maps/search/?api=1&query=${cafe.latitude},${cafe.longitude}',
+        );
+        if (await canLaunchUrl(fallbackUrl)) {
+          await launchUrl(fallbackUrl,
+              mode: LaunchMode.externalApplication);
+        } else {
+          _showError('Tidak bisa membuka Google Maps');
+        }
+      }
+    } catch (e) {
+      _showError('Gagal membuka Maps: $e');
     }
   }
 
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: cardColor,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  // ============================================
+  // TELEPON CAFE
+  // ============================================
   Future<void> _callCafe() async {
     final cleanPhone = widget.cafe.phone.replaceAll(RegExp(r'[^\d+]'), '');
     final url = Uri.parse('tel:$cleanPhone');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
+
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url);
+      } else {
+        _showError('Tidak bisa melakukan panggilan');
+      }
+    } catch (e) {
+      _showError('Gagal menelepon: $e');
     }
   }
 
@@ -221,7 +269,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // ===== HERO IMAGE (REVISI) =====
                   CafeImage(
                     source: cafe.imageUrl,
                     fit: BoxFit.cover,
@@ -491,7 +538,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
           ),
           child: Row(
             children: [
-              // ===== GAMBAR (KIRI) (REVISI) =====
+              // ===== GAMBAR (KIRI) =====
               CafeImage(
                 source: item.imageUrl,
                 width: 80,
