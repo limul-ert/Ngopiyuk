@@ -5,6 +5,7 @@ import '../models/cafe.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/cafe_image.dart';
 import 'cart_page.dart';
+import 'chat_page.dart'; // ← ✅ TAMBAH
 
 class CafeDetailPage extends StatefulWidget {
   final Cafe cafe;
@@ -148,21 +149,15 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
   }
 
   // ============================================
-  // TELEPON CAFE
+  // BUKA HALAMAN CHAT (GANTI TELEPON)
   // ============================================
-  Future<void> _callCafe() async {
-    final cleanPhone = widget.cafe.phone.replaceAll(RegExp(r'[^\d+]'), '');
-    final url = Uri.parse('tel:$cleanPhone');
-
-    try {
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url);
-      } else {
-        _showError('Tidak bisa melakukan panggilan');
-      }
-    } catch (e) {
-      _showError('Gagal menelepon: $e');
-    }
+  void _openChat() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatPage(cafe: widget.cafe),
+      ),
+    );
   }
 
   void _openCart() {
@@ -432,6 +427,10 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
           ),
         ],
       ),
+
+      // ============================================
+      // BOTTOM NAVIGATION (CHAT + MAPS)
+      // ============================================
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
         decoration: BoxDecoration(
@@ -444,9 +443,9 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
           children: [
             Expanded(
               child: OutlinedButton.icon(
-                onPressed: _callCafe,
-                icon: const Icon(Icons.phone, size: 18),
-                label: const Text('Telepon'),
+                onPressed: _openChat,
+                icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                label: const Text('Chat'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: primaryColor,
                   side: const BorderSide(color: primaryColor),

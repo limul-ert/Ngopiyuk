@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/cart_provider.dart';
+import 'providers/chat_provider.dart';
 import 'pages/login_page.dart';
 
 void main() {
@@ -12,8 +13,15 @@ class NgopiYukApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => CartProvider()..loadCart(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => CartProvider()..loadCart(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ChatProvider(),
+        ),
+      ],
       child: MaterialApp(
         title: 'NgopiYuk',
         debugShowCheckedModeBanner: false,

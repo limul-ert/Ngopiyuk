@@ -34,7 +34,7 @@ const List<MenuItem> _menuStandar = [
     name: 'Chocolate Ice',
     price: 22000,
     category: 'Minuman',
-    imageUrl: 'https://images.unsplash.com/photo-1542990253-0d0f5be5f0ed?w=400&q=80', // ← ✅ GANTI (iced chocolate)
+    imageUrl: 'https://images.unsplash.com/photo-1542990253-0d0f5be5f0ed?w=400&q=80',
   ),
 
   // ============ MAKANAN ============
@@ -115,7 +115,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Kafe dengan konsep rustic-natural dipenuhi tanaman hijau dan kolam. '
         'Nikmati kopi dengan suasana alam yang menenangkan di area cagar budaya.',
-    imageUrl: 'https://picsum.photos/seed/seacoffee/600/400',
+    imageUrl: 'assets/images/cafe/sea_coffee.jpg', // ← ✅ .jpg
     rating: 4.7,
     reviewCount: 213,
     openHours: '08.00 - 24.00',
@@ -135,7 +135,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Kafe asri dengan pepohonan rimbun di kawasan Perhutani. '
         'Suasana sejuk, cocok buat healing dan menyegarkan pikiran.',
-    imageUrl: 'https://picsum.photos/seed/hollycafe/600/400',
+    imageUrl: 'assets/images/cafe/holly_cafe.jpeg', // ← ✅ .jpeg
     rating: 4.6,
     reviewCount: 178,
     openHours: '09.00 - 22.00',
@@ -155,7 +155,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Desain arsitektur modern minimalis dipadu aksen kayu asri. '
         'Setiap sudutnya instagramable banget!',
-    imageUrl: 'assets/images/cafe/paratamu.png',
+    imageUrl: 'assets/images/cafe/paratamu.png', // ← ✅ .png
     rating: 4.7,
     reviewCount: 198,
     openHours: '09.00 - 23.00',
@@ -175,7 +175,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Kafe estetik dengan desain interior modern dan spot foto kekinian. '
         'Cocok buat nongkrong dan konten sosmed.',
-    imageUrl: 'https://picsum.photos/seed/hakuicoffee/600/400',
+    imageUrl: 'assets/images/cafe/hakui_coffee.jpeg', // ← ✅ .jpeg
     rating: 4.5,
     reviewCount: 156,
     openHours: '10.00 - 23.00',
@@ -195,7 +195,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Kafe dengan atap penuh tumbuhan rambat warna-warni. '
         'Cocok buat foto-foto estetik dan santai sore dengan harga terjangkau.',
-    imageUrl: 'assets/images/cafe/warung_latte.jpg',
+    imageUrl: 'assets/images/cafe/warung_latte.jpg', // ← ✅ .jpg
     rating: 4.6,
     reviewCount: 224,
     openHours: '11.00 - 23.00',
@@ -215,7 +215,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Coffee shop dengan harga ramah kantong dan suasana nyaman. '
         'Tempat favorit mahasiswa buat nugas dan diskusi.',
-    imageUrl: 'https://picsum.photos/seed/lokatara/600/400',
+    imageUrl: 'assets/images/cafe/lokatara_coffee.jpeg', // ← ✅ .jpeg
     rating: 4.4,
     reviewCount: 189,
     openHours: '09.00 - 23.00',
@@ -295,7 +295,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Warung kekinian yang buka 24 jam dengan menu variatif dan harga murah. '
         'Tempat nongkrong santai kapan pun kamu mau.',
-    imageUrl: 'assets/images/cafe/wow.jpg',
+    imageUrl: 'assets/images/cafe/wow.jpg', // ← ✅ .jpg
     rating: 4.4,
     reviewCount: 198,
     openHours: '24 Jam',
