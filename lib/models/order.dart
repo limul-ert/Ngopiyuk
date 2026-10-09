@@ -8,11 +8,12 @@ class Order {
   final int total;
   final String namaPenerima;
   final String nomorHp;
-  final String alamat;
+  final String cafeName;
   final String metodeBayar;
   final String catatan;
   final DateTime tanggal;
   final String status;
+  final DateTime? pickupTime; // ← ✅ null = "Segera"
 
   Order({
     required this.id,
@@ -22,12 +23,39 @@ class Order {
     required this.total,
     required this.namaPenerima,
     required this.nomorHp,
-    required this.alamat,
+    required this.cafeName,
     required this.metodeBayar,
     required this.catatan,
     required this.tanggal,
-    this.status = 'Diproses',
+    this.status = 'Menunggu Diambil',
+    this.pickupTime,
   });
+
+  // ============================================
+  // FORMAT JAM PENGAMBILAN (buat display)
+  // ============================================
+  String get pickupTimeFormatted {
+    if (pickupTime == null) return 'Segera';
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final pickupDate = DateTime(
+      pickupTime!.year,
+      pickupTime!.month,
+      pickupTime!.day,
+    );
+    final diffDays = pickupDate.difference(today).inDays;
+
+    final hourStr = pickupTime!.hour.toString().padLeft(2, '0');
+    final minStr = pickupTime!.minute.toString().padLeft(2, '0');
+    final timeStr = '$hourStr:$minStr';
+
+    if (diffDays == 0) return 'Hari ini, $timeStr WIB';
+    if (diffDays == 1) return 'Besok, $timeStr WIB';
+    return '${pickupTime!.day}/${pickupTime!.month}/${pickupTime!.year}, $timeStr WIB';
+  }
+
+  bool get isImmediate => pickupTime == null;
 
   Map<String, dynamic> toJson() {
     return {
@@ -38,11 +66,12 @@ class Order {
       'total': total,
       'namaPenerima': namaPenerima,
       'nomorHp': nomorHp,
-      'alamat': alamat,
+      'cafeName': cafeName,
       'metodeBayar': metodeBayar,
       'catatan': catatan,
       'tanggal': tanggal.toIso8601String(),
       'status': status,
+      'pickupTime': pickupTime?.toIso8601String(),
     };
   }
 
@@ -57,11 +86,14 @@ class Order {
       total: json['total'],
       namaPenerima: json['namaPenerima'],
       nomorHp: json['nomorHp'],
-      alamat: json['alamat'],
+      cafeName: json['cafeName'] ?? json['alamat'] ?? 'Cafe',
       metodeBayar: json['metodeBayar'],
       catatan: json['catatan'] ?? '',
       tanggal: DateTime.parse(json['tanggal']),
-      status: json['status'] ?? 'Diproses',
+      status: json['status'] ?? 'Menunggu Diambil',
+      pickupTime: json['pickupTime'] != null
+          ? DateTime.parse(json['pickupTime'])
+          : null,
     );
   }
 }

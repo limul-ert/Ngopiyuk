@@ -262,7 +262,7 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 24),
 
-              // ===== SEMUA CAFE (max 8) =====
+              // ===== SEMUA CAFE (max 4) =====
               _buildSectionTitle(
                 'Semua Cafe',
                 onViewAll: _openAllCafesPage,
@@ -302,7 +302,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(width: 12),
-              // Greeting dinamis (tanpa emoji)
               Expanded(
                 child: Text(
                   '$_greeting, $_userName!',
@@ -315,7 +314,6 @@ class _HomePageState extends State<HomePage> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // Favorit
               Container(
                 width: 40,
                 height: 40,
@@ -360,7 +358,6 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              // Notifikasi
               Container(
                 width: 40,
                 height: 40,
@@ -448,7 +445,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ===== LIST CAFE (MAX 8) =====
+  // ===== LIST CAFE (MAX 4) =====
   Widget _buildCafeList() {
     final allCafes = _filteredCafes;
 
@@ -470,8 +467,8 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    // Ambil max 8 cafe aja buat preview di Home
-    final cafes = allCafes.take(8).toList();
+    // ← ✅ DI SINI: ambil max 4 cafe aja
+    final cafes = allCafes.take(4).toList();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),

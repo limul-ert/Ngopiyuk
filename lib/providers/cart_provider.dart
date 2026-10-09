@@ -25,6 +25,18 @@ class CartProvider extends ChangeNotifier {
   static const int serviceFee = 5000;
   int get total => subtotal + serviceFee;
 
+  // ===== NAMA CAFE (buat pickup) =====
+  String get cafeName {
+    if (_items.isEmpty) return 'Cafe';
+    return _items.first.cafeName;
+  }
+
+  bool get hasMultipleCafes {
+    if (_items.isEmpty) return false;
+    final firstCafe = _items.first.cafeName;
+    return _items.any((item) => item.cafeName != firstCafe);
+  }
+
   // ===== LOAD DARI SHARED PREFERENCES =====
   Future<void> loadCart() async {
     final prefs = await SharedPreferences.getInstance();
@@ -50,7 +62,6 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ===== SIMPAN KE SHARED PREFERENCES =====
   Future<void> _saveCart() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
@@ -67,9 +78,7 @@ class CartProvider extends ChangeNotifier {
     );
   }
 
-  // ===== TAMBAH ITEM =====
   void addItem(MenuItem item, String cafeName) {
-    // Cek apakah item sudah ada (berdasarkan nama + cafe)
     final existingIndex = _items.indexWhere((i) =>
     i.item.name == item.name && i.cafeName == cafeName);
 
@@ -83,14 +92,12 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ===== TAMBAH QUANTITY =====
   void increment(int index) {
     _items[index].quantity++;
     _saveCart();
     notifyListeners();
   }
 
-  // ===== KURANGI QUANTITY =====
   void decrement(int index) {
     if (_items[index].quantity > 1) {
       _items[index].quantity--;
@@ -101,27 +108,25 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ===== HAPUS ITEM =====
   void removeItem(int index) {
     _items.removeAt(index);
     _saveCart();
     notifyListeners();
   }
 
-  // ===== CLEAR CART =====
   void clearCart() {
     _items.clear();
     _saveCart();
     notifyListeners();
   }
 
-  // ===== BUAT ORDER BARU =====
+  // ===== BUAT ORDER BARU (PICKUP MODEL) =====
   Future<Order> createOrder({
     required String namaPenerima,
     required String nomorHp,
-    required String alamat,
     required String metodeBayar,
     required String catatan,
+    DateTime? pickupTime, // ← ✅ null = Segera
   }) async {
     final orderId =
         'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
@@ -134,16 +139,16 @@ class CartProvider extends ChangeNotifier {
       total: total,
       namaPenerima: namaPenerima,
       nomorHp: nomorHp,
-      alamat: alamat,
+      cafeName: cafeName,
       metodeBayar: metodeBayar,
       catatan: catatan,
       tanggal: DateTime.now(),
+      pickupTime: pickupTime, // ← ✅
     );
 
-    _orders.insert(0, order); // Terbaru di atas
+    _orders.insert(0, order);
     await _saveOrders();
 
-    // Clear cart setelah checkout
     _items.clear();
     await _saveCart();
     notifyListeners();

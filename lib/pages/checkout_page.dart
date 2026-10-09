@@ -14,16 +14,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
   final _formKey = GlobalKey<FormState>();
   final _namaController = TextEditingController();
   final _hpController = TextEditingController();
-  final _alamatController = TextEditingController();
   final _catatanController = TextEditingController();
 
   String _metodeBayar = 'COD';
   bool _isLoading = false;
 
+  // ===== PICKUP MODE =====
+  bool _isImmediate = true; // true = Segera, false = Pilih Jam
+  DateTime? _pickupTime;
+
   static const Color primaryColor = Color(0xFFC8956D);
   static const Color bgColor = Color(0xFF0A0A0A);
   static const Color cardColor = Color(0xFF1A1A1A);
   static const Color inputBg = Color(0xFF141414);
+  static const Color dividerColor = Color(0xFF252525);
 
   final List<Map<String, dynamic>> _metodeBayarList = [
     {'name': 'COD', 'icon': Icons.payments_outlined, 'label': 'Bayar di Tempat'},
@@ -35,15 +39,83 @@ class _CheckoutPageState extends State<CheckoutPage> {
   void dispose() {
     _namaController.dispose();
     _hpController.dispose();
-    _alamatController.dispose();
     _catatanController.dispose();
     super.dispose();
   }
 
+  // ============================================
+  // PICK TIME
+  // ============================================
+  Future<void> _pickPickupTime() async {
+    final now = DateTime.now();
+    final initialTime = TimeOfDay(hour: now.hour + 1, minute: 0);
+
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+      helpText: 'PILIH JAM PENGAMBILAN',
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            timePickerTheme: TimePickerThemeData(
+              backgroundColor: cardColor,
+              hourMinuteColor: primaryColor.withValues(alpha: 0.15),
+              hourMinuteTextColor: Colors.white,
+              dayPeriodColor: primaryColor.withValues(alpha: 0.15),
+              dayPeriodTextColor: Colors.white,
+              dialBackgroundColor: bgColor,
+              dialHandColor: primaryColor,
+              dialTextColor: Colors.white,
+              entryModeIconColor: primaryColor,
+              helpTextStyle: const TextStyle(
+                color: Colors.grey,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked == null) return;
+
+    final now2 = DateTime.now();
+    var pickup = DateTime(
+      now2.year,
+      now2.month,
+      now2.day,
+      picked.hour,
+      picked.minute,
+    );
+
+    // Kalau jam yang dipilih < sekarang + 30 menit → anggap besok
+    // (biar user nggak salah input, contoh: sekarang jam 20, user pilih jam 08)
+    if (pickup.isBefore(now2.add(const Duration(minutes: 30)))) {
+      pickup = pickup.add(const Duration(days: 1));
+    }
+
+    setState(() {
+      _pickupTime = pickup;
+      _isImmediate = false;
+    });
+  }
+
+  // ============================================
+  // HANDLE CHECKOUT
+  // ============================================
   Future<void> _handleCheckout() async {
     FocusScope.of(context).unfocus();
 
     if (!_formKey.currentState!.validate()) return;
+
+    // Validasi: kalau pilih jam, harus ada _pickupTime
+    if (!_isImmediate && _pickupTime == null) {
+      _showSnackBar('Pilih jam pengambilan dulu ya', Icons.warning_amber_rounded);
+      return;
+    }
 
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(milliseconds: 1000));
@@ -54,19 +126,48 @@ class _CheckoutPageState extends State<CheckoutPage> {
     final order = await cart.createOrder(
       namaPenerima: _namaController.text.trim(),
       nomorHp: _hpController.text.trim(),
-      alamat: _alamatController.text.trim(),
       metodeBayar: _metodeBayar,
       catatan: _catatanController.text.trim(),
+      pickupTime: _isImmediate ? null : _pickupTime,
     );
 
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    // Navigasi ke Success Page
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (_) => OrderSuccessPage(order: order),
+      ),
+    );
+  }
+
+  void _showSnackBar(String message, IconData icon) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: Colors.black, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: primaryColor,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }
@@ -83,19 +184,23 @@ class _CheckoutPageState extends State<CheckoutPage> {
             _buildHeader(),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ===== SECTION: INFO PENERIMA =====
-                      _sectionTitle('Info Penerima'),
-                      const SizedBox(height: 12),
+                      // ===== PICKUP INFO =====
+                      _buildPickupInfo(cart),
+
+                      const SizedBox(height: 32),
+
+                      // ===== SECTION: INFO PEMESAN =====
+                      _sectionLabel('INFO PEMESAN'),
+                      const SizedBox(height: 14),
                       _buildTextField(
                         controller: _namaController,
-                        label: 'Nama Penerima',
-                        hint: 'Masukkan nama lengkap',
+                        hint: 'Nama lengkap',
                         icon: Icons.person_outline,
                         validator: (val) {
                           if (val == null || val.trim().isEmpty) {
@@ -104,11 +209,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       _buildTextField(
                         controller: _hpController,
-                        label: 'Nomor HP',
-                        hint: '0812-3456-7890',
+                        hint: 'Nomor WhatsApp',
                         icon: Icons.phone_outlined,
                         keyboardType: TextInputType.phone,
                         validator: (val) {
@@ -121,50 +225,42 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 12),
+
+                      const SizedBox(height: 28),
+
+                      // ===== SECTION: JAM PENGAMBILAN =====  ← ✅ BARU
+                      _sectionLabel('JAM PENGAMBILAN'),
+                      const SizedBox(height: 14),
+                      _buildPickupTimeOptions(),
+
+                      const SizedBox(height: 28),
+
+                      // ===== SECTION: CATATAN =====
+                      _sectionLabel('CATATAN (OPSIONAL)'),
+                      const SizedBox(height: 14),
                       _buildTextField(
-                        controller: _alamatController,
-                        label: 'Alamat Pengiriman',
-                        hint: 'Contoh: Jl. Ahmad Yani No. 45, Madiun',
-                        icon: Icons.location_on_outlined,
-                        maxLines: 3,
-                        validator: (val) {
-                          if (val == null || val.trim().isEmpty) {
-                            return 'Alamat tidak boleh kosong';
-                          }
-                          return null;
-                        },
+                        controller: _catatanController,
+                        hint: 'Contoh: Tanpa es, extra pedas, dll',
+                        icon: Icons.edit_note_outlined,
+                        maxLines: 2,
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 28),
 
                       // ===== SECTION: METODE PEMBAYARAN =====
-                      _sectionTitle('Metode Pembayaran'),
-                      const SizedBox(height: 12),
+                      _sectionLabel('METODE PEMBAYARAN'),
+                      const SizedBox(height: 14),
                       ..._metodeBayarList.map((m) => _buildPaymentOption(
                         name: m['name'],
                         icon: m['icon'],
                         label: m['label'],
                       )),
 
-                      const SizedBox(height: 24),
-
-                      // ===== SECTION: CATATAN =====
-                      _sectionTitle('Catatan (Opsional)'),
-                      const SizedBox(height: 12),
-                      _buildTextField(
-                        controller: _catatanController,
-                        label: '',
-                        hint: 'Contoh: Tanpa es, extra pedas, dll',
-                        icon: Icons.note_outlined,
-                        maxLines: 2,
-                      ),
-
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 28),
 
                       // ===== SECTION: RINGKASAN =====
-                      _sectionTitle('Ringkasan Pesanan'),
-                      const SizedBox(height: 12),
+                      _sectionLabel('RINGKASAN PESANAN'),
+                      const SizedBox(height: 14),
                       _buildOrderSummary(cart),
                     ],
                   ),
@@ -172,7 +268,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             ),
 
-            // ===== BOTTOM BAR =====
             _buildBottomBar(cart),
           ],
         ),
@@ -181,29 +276,307 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   // ============================================
-  // HEADER
+  // PICKUP TIME OPTIONS (SEGERA / PILIH JAM)
   // ============================================
+  Widget _buildPickupTimeOptions() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            // ===== TOMBOL: SEGERA =====
+            Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() {
+                  _isImmediate = true;
+                  _pickupTime = null;
+                }),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _isImmediate
+                        ? primaryColor.withValues(alpha: 0.1)
+                        : inputBg,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: _isImmediate ? primaryColor : dividerColor,
+                      width: _isImmediate ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.bolt,
+                        color: _isImmediate ? primaryColor : Colors.grey,
+                        size: 22,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Segera',
+                        style: TextStyle(
+                          color: _isImmediate ? Colors.white : Colors.grey,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Udah di cafe',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.4),
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            // ===== TOMBOL: PILIH JAM =====
+            Expanded(
+              child: GestureDetector(
+                onTap: _pickPickupTime,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: !_isImmediate
+                        ? primaryColor.withValues(alpha: 0.1)
+                        : inputBg,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: !_isImmediate ? primaryColor : dividerColor,
+                      width: !_isImmediate ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.schedule,
+                        color: !_isImmediate ? primaryColor : Colors.grey,
+                        size: 22,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Pilih Jam',
+                        style: TextStyle(
+                          color: !_isImmediate ? Colors.white : Colors.grey,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Atur waktu',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.4),
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        // ===== INFO HASIL PILIHAN =====
+        if (_isImmediate) ...[
+          const SizedBox(height: 12),
+          _buildPickupInfoBox(
+            icon: Icons.bolt,
+            text: 'Pesanan disiapkan segera. Ambil kapan saja di cafe.',
+            color: primaryColor,
+          ),
+        ] else if (_pickupTime != null) ...[
+          const SizedBox(height: 12),
+          _buildPickupInfoBox(
+            icon: Icons.event_available,
+            text: 'Diambil ${_formatPickupTime(_pickupTime!)}',
+            color: const Color(0xFF4CAF50),
+            onEdit: _pickPickupTime,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildPickupInfoBox({
+    required IconData icon,
+    required String text,
+    required Color color,
+    VoidCallback? onEdit,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          if (onEdit != null)
+            GestureDetector(
+              onTap: onEdit,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'Ubah',
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _formatPickupTime(DateTime dt) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final pickupDate = DateTime(dt.year, dt.month, dt.day);
+    final diffDays = pickupDate.difference(today).inDays;
+
+    final hourStr = dt.hour.toString().padLeft(2, '0');
+    final minStr = dt.minute.toString().padLeft(2, '0');
+    final timeStr = '$hourStr:$minStr';
+
+    if (diffDays == 0) return 'hari ini pukul $timeStr WIB';
+    if (diffDays == 1) return 'besok pukul $timeStr WIB';
+    return '${dt.day}/${dt.month}/${dt.year} pukul $timeStr WIB';
+  }
+
+  // ============================================
+  // PICKUP INFO (banner atas)
+  // ============================================
+  Widget _buildPickupInfo(CartProvider cart) {
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: dividerColor, width: 1),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: 3, color: primaryColor),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'AMBIL DI',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      cart.cafeName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(height: 1, color: dividerColor),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: primaryColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Pesanan disiapkan setelah kamu datang',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              fontSize: 12,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
-              width: 44,
-              height: 44,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: cardColor,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.05),
-                ),
+                border: Border.all(color: dividerColor),
               ),
               child: const Icon(
                 Icons.arrow_back,
                 color: Colors.white,
-                size: 20,
+                size: 18,
               ),
             ),
           ),
@@ -213,112 +586,85 @@ class _CheckoutPageState extends State<CheckoutPage> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
               ),
             ),
           ),
-          const SizedBox(width: 44),
+          const SizedBox(width: 40),
         ],
       ),
     );
   }
 
-  // ============================================
-  // SECTION TITLE
-  // ============================================
-  Widget _sectionTitle(String title) {
+  Widget _sectionLabel(String label) {
     return Text(
-      title,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 15,
-        fontWeight: FontWeight.bold,
+      label,
+      style: TextStyle(
+        color: Colors.white.withValues(alpha: 0.5),
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.2,
       ),
     );
   }
 
-  // ============================================
-  // TEXT FIELD
-  // ============================================
   Widget _buildTextField({
     required TextEditingController controller,
-    required String label,
     required String hint,
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (label.isNotEmpty) ...[
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 6),
-        ],
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          validator: validator,
-          style: const TextStyle(color: Colors.white, fontSize: 14),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Colors.white.withValues(alpha: 0.3),
-              fontSize: 13,
-            ),
-            prefixIcon: Icon(icon, color: Colors.grey, size: 20),
-            filled: true,
-            fillColor: inputBg,
-            contentPadding: const EdgeInsets.symmetric(
-              vertical: 14,
-              horizontal: 14,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.06),
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: primaryColor, width: 1.5),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide:
-              const BorderSide(color: Colors.redAccent, width: 1),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide:
-              const BorderSide(color: Colors.redAccent, width: 1.5),
-            ),
-            errorStyle: const TextStyle(
-              color: Colors.redAccent,
-              fontSize: 11,
-            ),
-          ),
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      validator: validator,
+      style: const TextStyle(color: Colors.white, fontSize: 14),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: Colors.white.withValues(alpha: 0.3),
+          fontSize: 13,
         ),
-      ],
+        prefixIcon: Icon(icon, color: Colors.grey, size: 20),
+        filled: true,
+        fillColor: inputBg,
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: dividerColor, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: primaryColor, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+        ),
+        errorStyle: const TextStyle(
+          color: Colors.redAccent,
+          fontSize: 11,
+        ),
+      ),
     );
   }
 
-  // ============================================
-  // PAYMENT OPTION
-  // ============================================
   Widget _buildPaymentOption({
     required String name,
     required IconData icon,
@@ -329,36 +675,24 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return GestureDetector(
       onTap: () => setState(() => _metodeBayar = name),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: isSelected
-              ? primaryColor.withValues(alpha: 0.12)
+              ? primaryColor.withValues(alpha: 0.08)
               : inputBg,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected
-                ? primaryColor
-                : Colors.white.withValues(alpha: 0.06),
+            color: isSelected ? primaryColor : dividerColor,
             width: isSelected ? 1.5 : 1,
           ),
         ),
         child: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? primaryColor.withValues(alpha: 0.2)
-                    : cardColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: isSelected ? primaryColor : Colors.grey,
-                size: 20,
-              ),
+            Icon(
+              icon,
+              color: isSelected ? primaryColor : Colors.grey,
+              size: 20,
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -370,14 +704,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     style: TextStyle(
                       color: isSelected ? Colors.white : Colors.grey,
                       fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     label,
-                    style: const TextStyle(
-                      color: Colors.grey,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
                       fontSize: 11,
                     ),
                   ),
@@ -385,8 +719,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             ),
             Container(
-              width: 22,
-              height: 22,
+              width: 20,
+              height: 20,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected ? primaryColor : Colors.transparent,
@@ -398,8 +732,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ),
               ),
               child: isSelected
-                  ? const Icon(Icons.check,
-                  color: Colors.white, size: 14)
+                  ? const Icon(Icons.check, color: Colors.black, size: 12)
                   : null,
             ),
           ],
@@ -408,23 +741,18 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  // ============================================
-  // ORDER SUMMARY
-  // ============================================
   Widget _buildOrderSummary(CartProvider cart) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: inputBg,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.06),
-        ),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: dividerColor, width: 1),
       ),
       child: Column(
         children: [
           ...cart.items.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.only(bottom: 12),
             child: Row(
               children: [
                 Expanded(
@@ -432,8 +760,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     '${item.quantity}x ${item.item.name}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
                       fontSize: 13,
                     ),
                   ),
@@ -449,14 +777,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ],
             ),
           )),
-          Container(
-            height: 1,
-            color: Colors.white.withValues(alpha: 0.08),
-          ),
-          const SizedBox(height: 10),
+          Container(height: 1, color: dividerColor),
+          const SizedBox(height: 12),
           _summaryRow('Subtotal',
               'Rp ${cart.subtotal.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}'),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           _summaryRow('Biaya Layanan',
               'Rp ${CartProvider.serviceFee.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}'),
         ],
@@ -469,7 +794,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
       children: [
         Text(
           label,
-          style: const TextStyle(color: Colors.grey, fontSize: 12),
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.5),
+            fontSize: 12,
+          ),
         ),
         const Spacer(),
         Text(
@@ -484,70 +812,55 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  // ============================================
-  // BOTTOM BAR
-  // ============================================
   Widget _buildBottomBar(CartProvider cart) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
         color: cardColor,
-        border: Border(
-          top: BorderSide(
-            color: Colors.white.withValues(alpha: 0.06),
-          ),
-        ),
+        border: Border(top: BorderSide(color: dividerColor, width: 1)),
       ),
       child: Row(
         children: [
-          // Total
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Total',
+              Text(
+                'TOTAL',
                 style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 4),
               Text(
                 'Rp ${cart.total.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
                 style: const TextStyle(
-                  color: primaryColor,
+                  color: Colors.white,
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
                 ),
               ),
             ],
           ),
-          const SizedBox(width: 16),
-
-          // Tombol Pesan
+          const SizedBox(width: 20),
           Expanded(
             child: GestureDetector(
               onTap: _isLoading ? null : _handleCheckout,
               child: Container(
-                height: 52,
+                height: 50,
                 decoration: BoxDecoration(
                   color: primaryColor,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: primaryColor.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
                   child: _isLoading
                       ? const SizedBox(
-                    width: 22,
-                    height: 22,
+                    width: 20,
+                    height: 20,
                     child: CircularProgressIndicator(
                       color: Colors.black,
                       strokeWidth: 2.5,
@@ -557,9 +870,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     'Pesan Sekarang',
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ),
