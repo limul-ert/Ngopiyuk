@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'home_page.dart';
+import 'main_page.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -24,7 +24,6 @@ class _LoginPageState extends State<LoginPage> {
   static const Color cardColor = Color(0xFF1A1A1A);
   static const Color inputBorder = Color(0xFF2A2A2A);
 
-  // Tinggi hero section
   static const double heroHeight = 240;
 
   @override
@@ -34,7 +33,6 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  // ===== HANDLE LOGIN =====
   Future<void> _handleLogin() async {
     FocusScope.of(context).unfocus();
 
@@ -73,9 +71,10 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
 
+    // ← ✅ REDIRECT KE MAINPAGE
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
+      MaterialPageRoute(builder: (context) => const MainPage()),
     );
   }
 
@@ -116,7 +115,6 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Logo brand
                 Row(
                   children: [
                     Container(
@@ -234,12 +232,11 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // ============================================
-  // MOBILE — HERO FIXED (logo tenggelam saat scroll)
+  // MOBILE — HERO FIXED
   // ============================================
   Widget _buildMobileLayout() {
     return Stack(
       children: [
-        // ===== LAYER 1: HERO FIXED (gak ikut scroll) =====
         Positioned(
           top: 0,
           left: 0,
@@ -248,7 +245,6 @@ class _LoginPageState extends State<LoginPage> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Foto background
               Image.network(
                 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80',
                 fit: BoxFit.cover,
@@ -265,7 +261,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              // Overlay gradient
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -279,7 +274,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              // Logo di tengah
               Center(
                 child: Container(
                   width: 100,
@@ -310,17 +304,14 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
 
-        // ===== LAYER 2: FORM SCROLLABLE (menutupi hero saat di-scroll) =====
         SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              // Spacer transparan — biar hero kelihatan di awal
               const SizedBox(height: heroHeight),
 
-              // Form dengan background solid (nutupin hero saat scroll)
               Container(
-                color: bgColor, // ← opak, nutupin hero
+                color: bgColor,
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -607,9 +598,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // ============================================
-  // INPUT FIELD BUILDER
-  // ============================================
   Widget _buildInputField({
     required TextEditingController controller,
     required String label,

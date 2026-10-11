@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'home_page.dart';
+import 'main_page.dart';
 import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -35,7 +35,6 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  // ===== HELPER: SNACKBAR =====
   void _showSnackBar({
     required IconData icon,
     required String message,
@@ -69,7 +68,6 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  // ===== HANDLE BACK =====
   void _handleBack() {
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
@@ -81,7 +79,6 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  // ===== HANDLE REGISTER =====
   Future<void> _handleRegister() async {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
@@ -117,9 +114,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
     if (!mounted) return;
 
+    // ← ✅ REDIRECT KE MAINPAGE
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const HomePage()),
+      MaterialPageRoute(builder: (_) => const MainPage()),
           (route) => false,
     );
   }
@@ -150,7 +148,6 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _buildDesktopLayout() {
     return Row(
       children: [
-        // ===== KIRI: FORM =====
         Expanded(
           flex: 5,
           child: SingleChildScrollView(
@@ -158,7 +155,6 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ===== LOGO + BACK BUTTON =====
                 Row(
                   children: [
                     Material(
@@ -249,7 +245,6 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
 
-        // ===== KANAN: FOTO =====
         Expanded(
           flex: 4,
           child: ClipRRect(
@@ -302,12 +297,11 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   // ============================================
-  // MOBILE — HERO FIXED + FORM SCROLLABLE + BACK TOP
+  // MOBILE
   // ============================================
   Widget _buildMobileLayout() {
     return Stack(
       children: [
-        // ===== LAYER 1: HERO FIXED =====
         Positioned(
           top: 0,
           left: 0,
@@ -345,7 +339,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
-              // Logo tengah
               Center(
                 child: Container(
                   width: 100,
@@ -376,7 +369,6 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
 
-        // ===== LAYER 2: FORM SCROLLABLE =====
         SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Column(
@@ -414,7 +406,6 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
 
-        // ===== LAYER 3: BACK BUTTON (PALING ATAS) =====
         Positioned(
           top: 16,
           left: 16,
@@ -518,7 +509,6 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           const SizedBox(height: 12),
 
-          // Checkbox Syarat & Ketentuan
           Row(
             children: [
               SizedBox(
@@ -562,7 +552,6 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           const SizedBox(height: 20),
 
-          // Tombol SIGN UP
           SizedBox(
             height: 54,
             child: ElevatedButton(
@@ -598,7 +587,6 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           const SizedBox(height: 24),
 
-          // Divider
           Row(
             children: [
               Expanded(
@@ -629,7 +617,6 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           const SizedBox(height: 20),
 
-          // Tombol Google
           SizedBox(
             height: 52,
             child: OutlinedButton(
@@ -680,7 +667,6 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           const SizedBox(height: 24),
 
-          // Link Login
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -706,9 +692,6 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  // ============================================
-  // INPUT FIELD BUILDER
-  // ============================================
   Widget _buildInputField({
     required TextEditingController controller,
     required String hint,

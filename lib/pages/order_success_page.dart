@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/order.dart';
-import 'home_page.dart';
+import 'main_page.dart'; // ← ✅ GANTI dari home_page
 
 class OrderSuccessPage extends StatelessWidget {
   final Order order;
@@ -79,9 +79,10 @@ class OrderSuccessPage extends StatelessWidget {
               // ===== TOMBOL KEMBALI =====
               GestureDetector(
                 onTap: () {
+                  // ← ✅ REDIRECT KE MAINPAGE
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (_) => const HomePage()),
+                    MaterialPageRoute(builder: (_) => const MainPage()),
                         (route) => false,
                   );
                 },
@@ -202,15 +203,12 @@ class OrderSuccessPage extends StatelessWidget {
                 _detailRow('Order ID', order.id),
                 const SizedBox(height: 12),
                 _detailRow('Nama', order.namaPenerima),
-
-                // ===== JAM PENGAMBILAN =====
                 const SizedBox(height: 12),
                 _detailRow(
                   'Jam Ambil',
                   order.pickupTimeFormatted,
                   isPickup: true,
                 ),
-
                 const SizedBox(height: 12),
                 _detailRow('Metode', order.metodeBayar),
                 const SizedBox(height: 12),

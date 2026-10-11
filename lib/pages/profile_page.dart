@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'login_page.dart';
 import 'edit_profile_page.dart';
 import 'info_pages.dart';
+import 'order_history_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -128,12 +129,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final canPop = Navigator.canPop(context);
+
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            _buildHeader(canPop),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -142,8 +145,20 @@ class _ProfilePageState extends State<ProfilePage> {
                     _buildProfileCard(),
                     const SizedBox(height: 18),
 
-                    // ===== GROUP 1: NOTIFIKASI + MENU =====
+                    // ===== GROUP 1: RIWAYAT + NOTIFIKASI + KONTAK =====
                     _buildGroup([
+                      _buildArrowTile(
+                        icon: Icons.receipt_long_outlined,
+                        title: 'Riwayat Pembelian',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const OrderHistoryPage(),
+                            ),
+                          );
+                        },
+                      ),
                       _buildSwitchTile(
                         icon: Icons.notifications_none,
                         title: 'Jeda Notifikasi',
@@ -220,30 +235,36 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildHeader() {
+  // ============================================
+  // HEADER (back button auto-hide kalau nggak bisa pop)
+  // ============================================
+  Widget _buildHeader(bool canPop) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: cardColor,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.05),
+          if (canPop)
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
                 ),
               ),
-              child: const Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-          ),
+            )
+          else
+            const SizedBox(width: 44),
           const Expanded(
             child: Text(
               'Profil',
