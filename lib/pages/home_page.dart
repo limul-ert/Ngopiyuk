@@ -7,6 +7,7 @@ import '../models/cafe.dart';
 import '../widgets/promo_carousel.dart';
 import '../widgets/category_row.dart';
 import '../widgets/cafe_card.dart';
+import '../widgets/animations.dart'; // ← ✅ TAMBAH
 import 'cafe_detail_page.dart';
 import 'favorites_page.dart';
 import 'search_page.dart';
@@ -16,10 +17,9 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => HomePageState();  // ← ✅ PUBLIC
+  State<HomePage> createState() => HomePageState();
 }
 
-// ← ✅ CLASS PUBLIC (dari _HomePageState)
 class HomePageState extends State<HomePage> {
   String _selectedCategory = 'All';
   String _userName = 'User';
@@ -38,9 +38,6 @@ class HomePageState extends State<HomePage> {
     _loadUserData();
   }
 
-  // ============================================
-  // PUBLIC METHOD — dipanggil dari MainPage
-  // ============================================
   Future<void> reloadUserData() async {
     await _loadUserData();
   }
@@ -214,13 +211,33 @@ class HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              // ==========================================
+              // 1. HEADER (index 0)
+              // ==========================================
+              StaggeredEntrance(
+                index: 0,
+                child: _buildHeader(),
+              ),
               const SizedBox(height: 16),
-              PromoCarousel(promos: dummyPromos),
+
+              // ==========================================
+              // 2. PROMO CAROUSEL (index 1)
+              // ==========================================
+              StaggeredEntrance(
+                index: 1,
+                child: PromoCarousel(promos: dummyPromos),
+              ),
               const SizedBox(height: 24),
-              _buildSectionTitle(
-                'Rating Tertinggi',
-                onViewAll: _openTopRatedPage,
+
+              // ==========================================
+              // 3. RATING TERTINGGI (index 2 + cards)
+              // ==========================================
+              StaggeredEntrance(
+                index: 2,
+                child: _buildSectionTitle(
+                  'Rating Tertinggi',
+                  onViewAll: _openTopRatedPage,
+                ),
               ),
               const SizedBox(height: 12),
               SizedBox(
@@ -231,27 +248,49 @@ class HomePageState extends State<HomePage> {
                   itemCount: _topRatedCafes.length,
                   itemBuilder: (context, index) {
                     final cafe = _topRatedCafes[index];
-                    return CafeCardHorizontal(
-                      cafe: cafe,
-                      onTap: () => _onCafeTap(cafe),
+                    return StaggeredEntrance(
+                      index: 3 + index,
+                      child: PressableCard(
+                        child: CafeCardHorizontal(
+                          cafe: cafe,
+                          onTap: () => _onCafeTap(cafe),
+                        ),
+                      ),
                     );
                   },
                 ),
               ),
               const SizedBox(height: 24),
-              _buildSectionTitle('Kategori'),
+
+              // ==========================================
+              // 4. KATEGORI (index 8 + 9)
+              // ==========================================
+              StaggeredEntrance(
+                index: 8,
+                child: _buildSectionTitle('Kategori'),
+              ),
               const SizedBox(height: 12),
-              CategoryRow(
-                categories: dummyCategories,
-                selectedCategory: _selectedCategory,
-                onCategorySelected: (cat) {
-                  setState(() => _selectedCategory = cat);
-                },
+              StaggeredEntrance(
+                index: 9,
+                child: CategoryRow(
+                  categories: dummyCategories,
+                  selectedCategory: _selectedCategory,
+                  onCategorySelected: (cat) {
+                    setState(() => _selectedCategory = cat);
+                  },
+                ),
               ),
               const SizedBox(height: 24),
-              _buildSectionTitle(
-                'Semua Cafe',
-                onViewAll: _openAllCafesPage,
+
+              // ==========================================
+              // 5. SEMUA CAFE (index 10 + list)
+              // ==========================================
+              StaggeredEntrance(
+                index: 10,
+                child: _buildSectionTitle(
+                  'Semua Cafe',
+                  onViewAll: _openAllCafesPage,
+                ),
               ),
               const SizedBox(height: 12),
               _buildCafeList(),
@@ -271,7 +310,6 @@ class HomePageState extends State<HomePage> {
         children: [
           Row(
             children: [
-              // Avatar (tidak bisa di-tap)
               Container(
                 width: 44,
                 height: 44,
@@ -453,12 +491,19 @@ class HomePageState extends State<HomePage> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
-        children: cafes
-            .map((cafe) => CafeCardVertical(
-          cafe: cafe,
-          onTap: () => _onCafeTap(cafe),
-        ))
-            .toList(),
+        children: [
+          // Stagger per card — index lanjut dari 11
+          for (int i = 0; i < cafes.length; i++)
+            StaggeredEntrance(
+              index: 11 + i,
+              child: PressableCard(
+                child: CafeCardVertical(
+                  cafe: cafes[i],
+                  onTap: () => _onCafeTap(cafes[i]),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

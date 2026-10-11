@@ -26,5 +26,6 @@ flutter:
 
   assets:
     - assets/images/kopi.png
+    - assets/images/mascot/         # ← ✅ TAMBAH folder baru
     - assets/images/cafe/
-    - assets/images/promo/    # ← ✅ TAMBAH
+    - assets/images/promo/

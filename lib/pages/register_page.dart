@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'main_page.dart';
+import 'loading_page.dart'; // ← ✅ GANTI dari main_page.dart
 import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -17,7 +17,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
 
   bool _obscurePassword = true;
-  bool _isLoading = false;
   bool _agreeTerms = false;
 
   static const Color primaryColor = Color(0xFFC8956D);
@@ -35,6 +34,7 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  // ===== SNACKBAR HELPER =====
   void _showSnackBar({
     required IconData icon,
     required String message,
@@ -79,6 +79,9 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  // ============================================
+  // HANDLE REGISTER → LANGSUNG KE LOADING PAGE
+  // ============================================
   Future<void> _handleRegister() async {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
@@ -91,33 +94,17 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 1000));
-
-    if (!mounted) return;
-
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_name', _nameController.text.trim());
     await prefs.setString('user_email', _emailController.text.trim());
     await prefs.setBool('is_logged_in', true);
 
     if (!mounted) return;
-    setState(() => _isLoading = false);
 
-    final name = _nameController.text.trim();
-    _showSnackBar(
-      icon: Icons.check_circle,
-      message: 'Akun berhasil dibuat! Selamat datang, $name ☕',
-    );
-
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    if (!mounted) return;
-
-    // ← ✅ REDIRECT KE MAINPAGE
+    // ← ✅ Navigate ke Loading Page
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const MainPage()),
+      MaterialPageRoute(builder: (_) => const LoadingPage()),
           (route) => false,
     );
   }
@@ -555,27 +542,16 @@ class _RegisterPageState extends State<RegisterPage> {
           SizedBox(
             height: 54,
             child: ElevatedButton(
-              onPressed: _isLoading ? null : _handleRegister,
+              onPressed: _handleRegister,
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.black,
-                disabledBackgroundColor:
-                primaryColor.withValues(alpha: 0.5),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(27),
                 ),
               ),
-              child: _isLoading
-                  ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  color: Colors.black,
-                  strokeWidth: 2.5,
-                ),
-              )
-                  : const Text(
+              child: const Text(
                 'Sign up',
                 style: TextStyle(
                   fontSize: 16,
@@ -692,6 +668,9 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  // ============================================
+  // INPUT FIELD BUILDER
+  // ============================================
   Widget _buildInputField({
     required TextEditingController controller,
     required String hint,

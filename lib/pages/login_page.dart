@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'main_page.dart';
+import 'loading_page.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -16,7 +16,6 @@ class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   bool _obscurePassword = true;
-  bool _isLoading = false;
   bool _rememberMe = false;
 
   static const Color primaryColor = Color(0xFFC8956D);
@@ -33,16 +32,13 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  // ============================================
+  // HANDLE LOGIN → LANGSUNG KE LOADING PAGE
+  // ============================================
   Future<void> _handleLogin() async {
     FocusScope.of(context).unfocus();
 
     if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isLoading = true);
-
-    await Future.delayed(const Duration(milliseconds: 1000));
-
-    if (!mounted) return;
 
     final email = _emailController.text.trim();
     final prefs = await SharedPreferences.getInstance();
@@ -60,21 +56,11 @@ class _LoginPageState extends State<LoginPage> {
     await prefs.setBool('is_logged_in', true);
 
     if (!mounted) return;
-    setState(() => _isLoading = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Selamat datang di NgopiYuk! ☕'),
-        backgroundColor: cardColor,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-
-    // ← ✅ REDIRECT KE MAINPAGE
+    // Navigate ke Loading Page
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const MainPage()),
+      MaterialPageRoute(builder: (context) => const LoadingPage()),
     );
   }
 
@@ -103,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // ============================================
-  // DESKTOP — SPLIT SCREEN
+  // DESKTOP
   // ============================================
   Widget _buildDesktopLayout() {
     return Row(
@@ -232,7 +218,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // ============================================
-  // MOBILE — HERO FIXED
+  // MOBILE
   // ============================================
   Widget _buildMobileLayout() {
     return Stack(
@@ -454,27 +440,16 @@ class _LoginPageState extends State<LoginPage> {
           SizedBox(
             height: 54,
             child: ElevatedButton(
-              onPressed: _isLoading ? null : _handleLogin,
+              onPressed: _handleLogin,
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.black,
-                disabledBackgroundColor:
-                primaryColor.withValues(alpha: 0.5),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(27),
                 ),
               ),
-              child: _isLoading
-                  ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  color: Colors.black,
-                  strokeWidth: 2.5,
-                ),
-              )
-                  : const Text(
+              child: const Text(
                 'Login',
                 style: TextStyle(
                   fontSize: 16,
