@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'login_page.dart';
 import 'edit_profile_page.dart';
 import 'info_pages.dart';
-import 'order_history_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -145,20 +144,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     _buildProfileCard(),
                     const SizedBox(height: 18),
 
-                    // ===== GROUP 1: RIWAYAT + NOTIFIKASI + KONTAK =====
+                    // ===== GROUP 1: NOTIFIKASI + KONTAK =====
                     _buildGroup([
-                      _buildArrowTile(
-                        icon: Icons.receipt_long_outlined,
-                        title: 'Riwayat Pembelian',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const OrderHistoryPage(),
-                            ),
-                          );
-                        },
-                      ),
                       _buildSwitchTile(
                         icon: Icons.notifications_none,
                         title: 'Jeda Notifikasi',

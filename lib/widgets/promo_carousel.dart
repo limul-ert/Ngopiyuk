@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/cafe.dart';
+import '../providers/cart_provider.dart';
+import '../pages/cart_page.dart';
+import 'cafe_image.dart';
 
 class PromoCarousel extends StatefulWidget {
   final List<Promo> promos;
@@ -14,6 +18,8 @@ class _PromoCarouselState extends State<PromoCarousel> {
   final PageController _controller = PageController(viewportFraction: 0.92);
   int _currentPage = 0;
   Timer? _autoSlideTimer;
+
+  static const Color primaryColor = Color(0xFFC8956D);
 
   @override
   void initState() {
@@ -40,6 +46,62 @@ class _PromoCarouselState extends State<PromoCarousel> {
     super.dispose();
   }
 
+  // ============================================
+  // TAP PROMO → ADD TO CART + BUKA CART PAGE
+  // ============================================
+  void _onPromoTap(Promo promo) {
+    final cart = context.read<CartProvider>();
+
+    // Buat MenuItem dari promo
+    final item = MenuItem(
+      name: promo.title,
+      price: promo.price,
+      imageUrl: promo.imageUrl,
+      category: 'Promo',
+    );
+
+    // Tambah ke cart
+    cart.addItem(item, promo.cafeName);
+
+    // Snackbar
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle,
+                color: Colors.black, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Promo "${promo.title}" ditambahkan ke keranjang',
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: primaryColor,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+
+    // Buka halaman cart
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CartPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.promos.isEmpty) return const SizedBox.shrink();
@@ -56,7 +118,10 @@ class _PromoCarouselState extends State<PromoCarousel> {
               final promo = widget.promos[index];
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: _PromoCard(promo: promo),
+                child: _PromoCard(
+                  promo: promo,
+                  onTap: () => _onPromoTap(promo),
+                ),
               );
             },
           ),
@@ -74,7 +139,7 @@ class _PromoCarouselState extends State<PromoCarousel> {
               height: 8,
               decoration: BoxDecoration(
                 color: _currentPage == i
-                    ? const Color(0xFFC8956D)
+                    ? primaryColor
                     : Colors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -86,102 +151,121 @@ class _PromoCarouselState extends State<PromoCarousel> {
   }
 }
 
+// ============================================
+// PROMO CARD (dengan onTap)
+// ============================================
 class _PromoCard extends StatelessWidget {
   final Promo promo;
-  const _PromoCard({required this.promo});
+  final VoidCallback onTap;
+
+  const _PromoCard({
+    required this.promo,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // ===== GAMBAR PROMO =====
-          Image.network(
-            promo.imageUrl,
-            fit: BoxFit.cover,
-            loadingBuilder: (context, child, progress) {
-              if (progress == null) return child;
-              return Container(
-                color: const Color(0xFF1A1A1A),
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFFC8956D),
-                    strokeWidth: 2,
-                  ),
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // ===== GAMBAR =====
+            CafeImage(
+              source: promo.imageUrl,
+              fit: BoxFit.cover,
+            ),
+
+            // ===== OVERLAY =====
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.1),
+                    Colors.black.withValues(alpha: 0.75),
+                  ],
                 ),
-              );
-            },
-            errorBuilder: (context, error, stackTrace) => Container(
-              color: const Color(0xFF1A1A1A),
-              child: const Icon(
-                Icons.local_offer,
-                color: Color(0xFFC8956D),
-                size: 40,
               ),
             ),
-          ),
-          // ===== OVERLAY GELAP =====
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.1),
-                  Colors.black.withValues(alpha: 0.75),
+
+            // ===== BADGE "PROMO" (kanan atas) =====
+            Positioned(
+              top: 12,
+              right: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFC8956D),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'PROMO',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+            ),
+
+            // ===== TEKS PROMO =====
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFC8956D),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      promo.cafeName,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    promo.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    promo.subtitle,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 13,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),
-          ),
-          // ===== TEKS PROMO =====
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Badge kafe
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFC8956D),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    promo.cafeName,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                // Judul promo
-                Text(
-                  promo.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                // Subtitle
-                Text(
-                  promo.subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.85),
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

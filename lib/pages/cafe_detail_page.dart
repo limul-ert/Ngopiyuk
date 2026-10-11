@@ -5,7 +5,7 @@ import '../models/cafe.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/cafe_image.dart';
 import 'cart_page.dart';
-import 'chat_page.dart'; // ← ✅ TAMBAH
+import 'chat_page.dart';
 
 class CafeDetailPage extends StatefulWidget {
   final Cafe cafe;
@@ -102,16 +102,14 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
   }
 
   // ============================================
-  // BUKA GOOGLE MAPS — PAKAI ALAMAT (AKURAT)
+  // BUKA GOOGLE MAPS
   // ============================================
   Future<void> _openMaps() async {
     final cafe = widget.cafe;
 
-    // Prioritaskan pencarian pakai nama + alamat (paling akurat)
     final query = '${cafe.name}, ${cafe.address}';
     final encodedQuery = Uri.encodeComponent(query);
 
-    // URL Google Maps universal — bisa buka app di mobile, web di desktop
     final url = Uri.parse(
       'https://www.google.com/maps/search/?api=1&query=$encodedQuery',
     );
@@ -120,7 +118,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
-        // Fallback 1: coba pakai koordinat
         final fallbackUrl = Uri.parse(
           'https://www.google.com/maps/search/?api=1&query=${cafe.latitude},${cafe.longitude}',
         );
@@ -148,9 +145,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
     );
   }
 
-  // ============================================
-  // BUKA HALAMAN CHAT (GANTI TELEPON)
-  // ============================================
   void _openChat() {
     Navigator.push(
       context,
@@ -161,6 +155,61 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
   }
 
   void _openCart() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CartPage()),
+    );
+  }
+
+  // ============================================
+  // TAP PROMO → ADD TO CART + BUKA CART PAGE
+  // ============================================
+  void _onPromoTap(Promo promo) {
+    final cart = context.read<CartProvider>();
+
+    // Buat MenuItem dari promo
+    final item = MenuItem(
+      name: promo.title,
+      price: promo.price,
+      imageUrl: promo.imageUrl,
+      category: 'Promo',
+    );
+
+    // Tambah ke cart
+    cart.addItem(item, promo.cafeName);
+
+    // Snackbar
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.black, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Promo "${promo.title}" ditambahkan ke keranjang',
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: primaryColor,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+
+    // Buka halaman cart
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const CartPage()),
@@ -396,6 +445,17 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
             ),
           ),
 
+          // ============================================
+          // PROMO BANNER — muncul kalau cafe punya promo
+          // ============================================
+          if (cafe.promo != null)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+                child: _buildPromoBanner(cafe.promo!),
+              ),
+            ),
+
           // ===== TAB PILLS (STICKY) =====
           SliverPersistentHeader(
             pinned: true,
@@ -427,10 +487,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
           ),
         ],
       ),
-
-      // ============================================
-      // BOTTOM NAVIGATION (CHAT + MAPS)
-      // ============================================
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
         decoration: BoxDecoration(
@@ -476,6 +532,139 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
           ],
         ),
       ),
+    );
+  }
+
+  // ============================================
+  // PROMO BANNER (TAPPABLE)
+  // ============================================
+  Widget _buildPromoBanner(Promo promo) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section title
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 16,
+              decoration: BoxDecoration(
+                color: primaryColor,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Promo Spesial',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              'Ketuk untuk beli',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.4),
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // Banner card (tappable)
+        GestureDetector(
+          onTap: () => _onPromoTap(promo),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Stack(
+              children: [
+                AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: CafeImage(
+                    source: promo.imageUrl,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.75),
+                        ],
+                        stops: const [0.45, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: primaryColor,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'PROMO',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: 14,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        promo.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
+                          letterSpacing: -0.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        promo.subtitle,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 12,
+                          height: 1.3,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -537,7 +726,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
           ),
           child: Row(
             children: [
-              // ===== GAMBAR (KIRI) =====
               CafeImage(
                 source: item.imageUrl,
                 width: 80,
@@ -545,14 +733,11 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                 borderRadius: BorderRadius.circular(12),
               ),
               const SizedBox(width: 14),
-
-              // ===== TEXT + TOMBOL (KANAN) =====
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Nama menu
                     Text(
                       item.name,
                       maxLines: 2,
@@ -565,8 +750,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                       ),
                     ),
                     const SizedBox(height: 6),
-
-                    // Harga
                     Text(
                       'Rp ${item.price.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
                       style: const TextStyle(
@@ -576,8 +759,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-
-                    // ===== TOMBOL BUY NOW =====
                     GestureDetector(
                       onTap: () {
                         cart.addItem(item, widget.cafe.name);

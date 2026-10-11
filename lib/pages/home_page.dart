@@ -9,7 +9,6 @@ import '../widgets/category_row.dart';
 import '../widgets/cafe_card.dart';
 import 'cafe_detail_page.dart';
 import 'favorites_page.dart';
-import 'profile_page.dart';
 import 'search_page.dart';
 import 'cafe_list_page.dart';
 
@@ -17,16 +16,16 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => HomePageState();  // ← ✅ PUBLIC
 }
 
-class _HomePageState extends State<HomePage> {
+// ← ✅ CLASS PUBLIC (dari _HomePageState)
+class HomePageState extends State<HomePage> {
   String _selectedCategory = 'All';
   String _userName = 'User';
   String _userAvatar = '😀';
   Uint8List? _avatarImageBytes;
 
-  // ===== STATE FAVORIT =====
   final Set<String> _favoriteCafeNames = {};
 
   static const Color primaryColor = Color(0xFFC8956D);
@@ -39,7 +38,13 @@ class _HomePageState extends State<HomePage> {
     _loadUserData();
   }
 
-  // ===== GREETING DINAMIS =====
+  // ============================================
+  // PUBLIC METHOD — dipanggil dari MainPage
+  // ============================================
+  Future<void> reloadUserData() async {
+    await _loadUserData();
+  }
+
   String get _greeting {
     final hour = DateTime.now().hour;
     if (hour >= 5 && hour < 11) return 'Selamat Pagi';
@@ -48,7 +53,6 @@ class _HomePageState extends State<HomePage> {
     return 'Selamat Malam';
   }
 
-  // ===== BACA NAMA & AVATAR =====
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
@@ -70,7 +74,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // ===== AVATAR CONTENT =====
   Widget _buildAvatarContent() {
     if (_avatarImageBytes != null) {
       return ClipOval(
@@ -88,7 +91,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ===== GETTERS =====
   List<Cafe> get _filteredCafes {
     if (_selectedCategory == 'All') return dummyCafes;
     return dummyCafes.where((cafe) {
@@ -109,7 +111,6 @@ class _HomePageState extends State<HomePage> {
         .toList();
   }
 
-  // ===== FAVORIT =====
   bool _isFavorite(String cafeName) => _favoriteCafeNames.contains(cafeName);
 
   void _toggleFavorite(String cafeName) {
@@ -134,7 +135,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ===== NAVIGASI =====
   void _onCafeTap(Cafe cafe) {
     Navigator.push(
       context,
@@ -160,13 +160,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _openProfile() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ProfilePage()),
-    ).then((_) => _loadUserData());
-  }
-
   void _openSearch() {
     Navigator.push(
       context,
@@ -179,7 +172,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ===== BUKA HALAMAN CAFE LIST =====
   void _openTopRatedPage() {
     Navigator.push(
       context,
@@ -226,8 +218,6 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 16),
               PromoCarousel(promos: dummyPromos),
               const SizedBox(height: 24),
-
-              // ===== RATING TERTINGGI =====
               _buildSectionTitle(
                 'Rating Tertinggi',
                 onViewAll: _openTopRatedPage,
@@ -249,8 +239,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // ===== KATEGORI =====
               _buildSectionTitle('Kategori'),
               const SizedBox(height: 12),
               CategoryRow(
@@ -261,8 +249,6 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               const SizedBox(height: 24),
-
-              // ===== SEMUA CAFE (max 4) =====
               _buildSectionTitle(
                 'Semua Cafe',
                 onViewAll: _openAllCafesPage,
@@ -277,7 +263,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ===== HEADER =====
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -286,20 +271,18 @@ class _HomePageState extends State<HomePage> {
         children: [
           Row(
             children: [
-              GestureDetector(
-                onTap: _openProfile,
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: primaryColor.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: primaryColor, width: 1.5),
-                  ),
-                  alignment: Alignment.center,
-                  clipBehavior: Clip.antiAlias,
-                  child: _buildAvatarContent(),
+              // Avatar (tidak bisa di-tap)
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: primaryColor, width: 1.5),
                 ),
+                alignment: Alignment.center,
+                clipBehavior: Clip.antiAlias,
+                child: _buildAvatarContent(),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -413,7 +396,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ===== SECTION TITLE =====
   Widget _buildSectionTitle(String title, {VoidCallback? onViewAll}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -445,7 +427,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ===== LIST CAFE (MAX 4) =====
   Widget _buildCafeList() {
     final allCafes = _filteredCafes;
 
@@ -467,7 +448,6 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    // ← ✅ DI SINI: ambil max 4 cafe aja
     final cafes = allCafes.take(4).toList();
 
     return Padding(
@@ -483,7 +463,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ===== DRAWER =====
   Widget _buildDrawer() {
     return Drawer(
       backgroundColor: bgColor,
@@ -529,14 +508,6 @@ class _HomePageState extends State<HomePage> {
             onTap: () {
               Navigator.pop(context);
               _openFavorites();
-            },
-          ),
-          _buildDrawerItem(
-            Icons.person_outline,
-            'Profil',
-            onTap: () {
-              Navigator.pop(context);
-              _openProfile();
             },
           ),
         ],

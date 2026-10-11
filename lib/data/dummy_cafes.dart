@@ -1,8 +1,7 @@
 import '../models/cafe.dart';
 
 // ============================================
-// MENU STANDAR — dipakai semua cafe
-// Foto dari Unsplash (support CORS, aman di Flutter Web)
+// MENU STANDAR
 // ============================================
 const List<MenuItem> _menuStandar = [
   // ============ MINUMAN ============
@@ -103,7 +102,7 @@ const List<MenuItem> _menuStandar = [
 ];
 
 // ============================================
-// 10 CAFE REAL MADIUN — menu disamakan
+// 10 CAFE REAL MADIUN
 // ============================================
 final List<Cafe> dummyCafes = [
   // ============ 1. SEA COFFEE ============
@@ -115,7 +114,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Kafe dengan konsep rustic-natural dipenuhi tanaman hijau dan kolam. '
         'Nikmati kopi dengan suasana alam yang menenangkan di area cagar budaya.',
-    imageUrl: 'assets/images/cafe/sea_coffee.jpg', // ← ✅ .jpg
+    imageUrl: 'assets/images/cafe/sea_coffee.jpg',
     rating: 4.7,
     reviewCount: 213,
     openHours: '08.00 - 24.00',
@@ -124,6 +123,13 @@ final List<Cafe> dummyCafes = [
     latitude: -7.6240,
     longitude: 111.5180,
     menu: _menuStandar,
+    promo: Promo(
+      title: 'Refresh & Unwind',
+      subtitle: 'Mocktail Espresso - Open Everyday',
+      imageUrl: 'assets/images/promo/sea_coffee.jpg',
+      cafeName: 'Sea Coffee',
+      price: 25000,
+    ),
   ),
 
   // ============ 2. HOLLY CAFE ============
@@ -135,7 +141,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Kafe asri dengan pepohonan rimbun di kawasan Perhutani. '
         'Suasana sejuk, cocok buat healing dan menyegarkan pikiran.',
-    imageUrl: 'assets/images/cafe/holly_cafe.jpeg', // ← ✅ .jpeg
+    imageUrl: 'assets/images/cafe/holly_cafe.jpeg',
     rating: 4.6,
     reviewCount: 178,
     openHours: '09.00 - 22.00',
@@ -155,7 +161,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Desain arsitektur modern minimalis dipadu aksen kayu asri. '
         'Setiap sudutnya instagramable banget!',
-    imageUrl: 'assets/images/cafe/paratamu.png', // ← ✅ .png
+    imageUrl: 'assets/images/cafe/paratamu.png',
     rating: 4.7,
     reviewCount: 198,
     openHours: '09.00 - 23.00',
@@ -164,6 +170,13 @@ final List<Cafe> dummyCafes = [
     latitude: -7.6480,
     longitude: 111.5420,
     menu: _menuStandar,
+    promo: Promo(
+      title: 'Special Independence Day',
+      subtitle: 'Chicken Burger + Berry Tea Only Rp 19.845',
+      imageUrl: 'assets/images/promo/paratamu.jpg',
+      cafeName: 'Paratamu Coffee',
+      price: 19845,
+    ),
   ),
 
   // ============ 4. HAKUI COFFEE ============
@@ -175,7 +188,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Kafe estetik dengan desain interior modern dan spot foto kekinian. '
         'Cocok buat nongkrong dan konten sosmed.',
-    imageUrl: 'assets/images/cafe/hakui_coffee.jpeg', // ← ✅ .jpeg
+    imageUrl: 'assets/images/cafe/hakui_coffee.jpeg',
     rating: 4.5,
     reviewCount: 156,
     openHours: '10.00 - 23.00',
@@ -195,7 +208,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Kafe dengan atap penuh tumbuhan rambat warna-warni. '
         'Cocok buat foto-foto estetik dan santai sore dengan harga terjangkau.',
-    imageUrl: 'assets/images/cafe/warung_latte.jpg', // ← ✅ .jpg
+    imageUrl: 'assets/images/cafe/warung_latte.jpg',
     rating: 4.6,
     reviewCount: 224,
     openHours: '11.00 - 23.00',
@@ -215,7 +228,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Coffee shop dengan harga ramah kantong dan suasana nyaman. '
         'Tempat favorit mahasiswa buat nugas dan diskusi.',
-    imageUrl: 'assets/images/cafe/lokatara_coffee.jpeg', // ← ✅ .jpeg
+    imageUrl: 'assets/images/cafe/lokatara_coffee.jpeg',
     rating: 4.4,
     reviewCount: 189,
     openHours: '09.00 - 23.00',
@@ -244,6 +257,13 @@ final List<Cafe> dummyCafes = [
     latitude: -7.6235,
     longitude: 111.5240,
     menu: _menuStandar,
+    promo: Promo(
+      title: 'Makan Minum Sampai Kenyang',
+      subtitle: 'Cuma Rp 30.000',
+      imageUrl: 'assets/images/promo/brewok.jpg',
+      cafeName: 'Warkop Brewok',
+      price: 30000,
+    ),
   ),
 
   // ============ 8. TOMORO COFFEE ============
@@ -284,6 +304,13 @@ final List<Cafe> dummyCafes = [
     latitude: -7.6298,
     longitude: 111.5239,
     menu: _menuStandar,
+    promo: Promo(
+      title: 'Morning Breakfast',
+      subtitle: 'With Freen - Only Rp 35.000',
+      imageUrl: 'assets/images/promo/freen_house.jpg',
+      cafeName: 'Freen House',
+      price: 35000,
+    ),
   ),
 
   // ============ 10. WARUNK WOW KWB ============
@@ -295,7 +322,7 @@ final List<Cafe> dummyCafes = [
     description:
     'Warung kekinian yang buka 24 jam dengan menu variatif dan harga murah. '
         'Tempat nongkrong santai kapan pun kamu mau.',
-    imageUrl: 'assets/images/cafe/wow.jpg', // ← ✅ .jpg
+    imageUrl: 'assets/images/cafe/wow.jpg',
     rating: 4.4,
     reviewCount: 198,
     openHours: '24 Jam',
@@ -312,28 +339,32 @@ final List<Cafe> dummyCafes = [
 // ============================================
 final List<Promo> dummyPromos = [
   const Promo(
-    title: 'Diskon 30%',
-    subtitle: 'Freen Signature Coffee',
-    imageUrl: 'https://picsum.photos/seed/promo1/800/400',
-    cafeName: 'Freen House',
+    title: 'Special Independence Day',
+    subtitle: 'Chicken Burger + Berry Tea Only Rp 19.845',
+    imageUrl: 'assets/images/promo/paratamu.jpg',
+    cafeName: 'Paratamu Coffee',
+    price: 19845,
   ),
   const Promo(
-    title: 'Beli 1 Gratis 1',
-    subtitle: 'Semua Varian Latte',
-    imageUrl: 'https://picsum.photos/seed/promo2/800/400',
-    cafeName: 'Waroeng Latte',
-  ),
-  const Promo(
-    title: 'Paket Nugas',
-    subtitle: 'Kopi + Snack Rp 25.000',
-    imageUrl: 'https://picsum.photos/seed/promo3/800/400',
-    cafeName: 'Lokatara Coffee',
-  ),
-  const Promo(
-    title: 'Happy Hour',
-    subtitle: 'Diskon 20% jam 3-5 sore',
-    imageUrl: 'https://picsum.photos/seed/promo4/800/400',
+    title: 'Refresh & Unwind',
+    subtitle: 'Mocktail Espresso - Open Everyday',
+    imageUrl: 'assets/images/promo/sea_coffee.jpg',
     cafeName: 'Sea Coffee',
+    price: 25000,
+  ),
+  const Promo(
+    title: 'Makan Minum Sampai Kenyang',
+    subtitle: 'Cuma Rp 30.000',
+    imageUrl: 'assets/images/promo/brewok.jpg',
+    cafeName: 'Warkop Brewok',
+    price: 30000,
+  ),
+  const Promo(
+    title: 'Morning Breakfast',
+    subtitle: 'With Freen - Only Rp 35.000',
+    imageUrl: 'assets/images/promo/freen_house.jpg',
+    cafeName: 'Freen House',
+    price: 35000,
   ),
 ];
 

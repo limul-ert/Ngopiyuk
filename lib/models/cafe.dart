@@ -12,6 +12,7 @@ class Cafe {
   final List<MenuItem> menu;
   final double latitude;
   final double longitude;
+  final Promo? promo;
 
   const Cafe({
     required this.name,
@@ -27,6 +28,7 @@ class Cafe {
     required this.menu,
     required this.latitude,
     required this.longitude,
+    this.promo,
   });
 }
 
@@ -34,7 +36,7 @@ class MenuItem {
   final String name;
   final int price;
   final String imageUrl;
-  final String category; // 'Minuman', 'Makanan', 'Snack'
+  final String category;
 
   const MenuItem({
     required this.name,
@@ -49,11 +51,13 @@ class Promo {
   final String subtitle;
   final String imageUrl;
   final String cafeName;
+  final int price; // ← ✅ BARU
 
   const Promo({
     required this.title,
     required this.subtitle,
     required this.imageUrl,
     required this.cafeName,
+    required this.price,
   });
 }
