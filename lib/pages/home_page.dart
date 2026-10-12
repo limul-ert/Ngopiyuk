@@ -7,7 +7,7 @@ import '../models/cafe.dart';
 import '../widgets/promo_carousel.dart';
 import '../widgets/category_row.dart';
 import '../widgets/cafe_card.dart';
-import '../widgets/animations.dart'; // ← ✅ TAMBAH
+import '../widgets/animations.dart';
 import 'cafe_detail_page.dart';
 import 'favorites_page.dart';
 import 'search_page.dart';
@@ -203,35 +203,30 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Hitung tinggi navbar (72px height + 16px bottom padding + safe area)
+    final bottomPadding = MediaQuery.of(context).padding.bottom + 130;
+
     return Scaffold(
       backgroundColor: bgColor,
       drawer: _buildDrawer(),
       body: SafeArea(
+        bottom: false, // ← ✅ biar scroll bisa tembus ke bawah
         child: SingleChildScrollView(
+          // ← ✅ padding bottom biar nggak ketutupan navbar
+          padding: EdgeInsets.only(bottom: bottomPadding.toDouble()),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ==========================================
-              // 1. HEADER (index 0)
-              // ==========================================
               StaggeredEntrance(
                 index: 0,
                 child: _buildHeader(),
               ),
               const SizedBox(height: 16),
-
-              // ==========================================
-              // 2. PROMO CAROUSEL (index 1)
-              // ==========================================
               StaggeredEntrance(
                 index: 1,
                 child: PromoCarousel(promos: dummyPromos),
               ),
               const SizedBox(height: 24),
-
-              // ==========================================
-              // 3. RATING TERTINGGI (index 2 + cards)
-              // ==========================================
               StaggeredEntrance(
                 index: 2,
                 child: _buildSectionTitle(
@@ -261,10 +256,6 @@ class HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // ==========================================
-              // 4. KATEGORI (index 8 + 9)
-              // ==========================================
               StaggeredEntrance(
                 index: 8,
                 child: _buildSectionTitle('Kategori'),
@@ -281,10 +272,6 @@ class HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // ==========================================
-              // 5. SEMUA CAFE (index 10 + list)
-              // ==========================================
               StaggeredEntrance(
                 index: 10,
                 child: _buildSectionTitle(
@@ -492,7 +479,6 @@ class HomePageState extends State<HomePage> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          // Stagger per card — index lanjut dari 11
           for (int i = 0; i < cafes.length; i++)
             StaggeredEntrance(
               index: 11 + i,

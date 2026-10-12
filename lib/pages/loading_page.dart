@@ -15,23 +15,27 @@ class _LoadingPageState extends State<LoadingPage>
   late final AnimationController _frameController;
   late final AnimationController _bobController;
   late final AnimationController _fadeController;
+  late final AnimationController _progressController;
   Timer? _navTimer;
 
-  static const Color _bg = Color(0xFF1B4A5A);
+  // ===== WARNA SETEMA APP =====
+  static const Color _primary = Color(0xFFC8956D);
+  static const Color _bgColor = Color(0xFF0F0F0F);
+  static const Color _progressTrack = Color(0xFF2A2A2A);
 
   // ============================================
-  // 5 FRAMES — semua pose diikutkan
+  // FRAMES
   // ============================================
   static const List<String> _frames = [
-    'assets/images/mascot/frame1.png', // Persiapan
-    'assets/images/mascot/frame2.png', // Langkah 1
-    'assets/images/mascot/frame3.png', // Langkah 2
-    'assets/images/mascot/frame4.png', // Tunjuk HP
-    'assets/images/mascot/frame5.png', // Lompat
+    'assets/images/mascot/frame1.png',
+    'assets/images/mascot/frame2.png',
+    'assets/images/mascot/frame3.png',
+    'assets/images/mascot/frame4.png',
+    'assets/images/mascot/frame5.png',
   ];
 
-  // Durasi per frame
-  static const int _frameDurationMs = 300;
+  static const int _frameDurationMs = 550;
+  static const int _totalLoadingMs = 5000;
 
   @override
   void initState() {
@@ -39,14 +43,12 @@ class _LoadingPageState extends State<LoadingPage>
 
     _frameController = AnimationController(
       vsync: this,
-      duration: Duration(
-        milliseconds: _frames.length * _frameDurationMs,
-      ),
+      duration: Duration(milliseconds: _frames.length * _frameDurationMs),
     )..repeat();
 
     _bobController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 1100),
     )..repeat(reverse: true);
 
     _fadeController = AnimationController(
@@ -54,7 +56,12 @@ class _LoadingPageState extends State<LoadingPage>
       duration: const Duration(milliseconds: 800),
     )..forward();
 
-    _navTimer = Timer(const Duration(milliseconds: 4500), () {
+    _progressController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: _totalLoadingMs),
+    )..forward();
+
+    _navTimer = Timer(Duration(milliseconds: _totalLoadingMs + 200), () {
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
@@ -83,6 +90,7 @@ class _LoadingPageState extends State<LoadingPage>
     _frameController.dispose();
     _bobController.dispose();
     _fadeController.dispose();
+    _progressController.dispose();
     super.dispose();
   }
 
@@ -91,115 +99,152 @@ class _LoadingPageState extends State<LoadingPage>
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
 
-    // ← ✅ Ukuran maskot: 95% dari lebar layar
-    final mascotSize = w * 0.95;
+    final mascotSize = w * 1.15;
 
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: _bgColor,
       body: Stack(
         children: [
           // ===== PARTICLES =====
           ..._buildParticles(w, h),
 
-          // ===== GROUND SHADOW =====
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: h * 0.28,
-            child: AnimatedBuilder(
-              animation: _bobController,
-              builder: (context, _) {
-                final scaleX = 1.0 - _bobController.value * 0.15;
-                return Center(
-                  child: Transform.scale(
-                    scaleX: scaleX,
-                    child: Container(
-                      width: mascotSize * 0.55,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
+          // ===== MAIN CONTENT (maskot + progress, centered) =====
+          Center(
+            child: FadeTransition(
+              opacity: _fadeController,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ===== MASKOT =====
+                  AnimatedBuilder(
+                    animation: Listenable.merge([
+                      _frameController,
+                      _bobController,
+                    ]),
+                    builder: (context, _) {
+                      final bob = _bobController.value * 12 - 6;
+                      final sway = math.sin(
+                        _frameController.value * math.pi * 2,
+                      ) *
+                          6;
+                      final tilt = math.sin(
+                        _frameController.value * math.pi * 2,
+                      ) *
+                          0.03;
+
+                      final frameIndex =
+                          (_frameController.value * _frames.length).floor() %
+                              _frames.length;
+
+                      return Transform.translate(
+                        offset: Offset(sway, bob),
+                        child: Transform.rotate(
+                          angle: tilt,
+                          child: AnimatedSwitcher(
+                            duration: Duration(
+                              milliseconds: _frameDurationMs ~/ 2,
+                            ),
+                            switchInCurve: Curves.easeInOut,
+                            switchOutCurve: Curves.easeInOut,
+                            child: Image.asset(
+                              _frames[frameIndex],
+                              key: ValueKey(frameIndex),
+                              width: mascotSize,
+                              fit: BoxFit.contain,
+                              gaplessPlayback: true,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // ===== GAP antara maskot & progress bar =====
+                  SizedBox(height: h * 0.04),
+
+                  // ===== PROGRESS BAR + LABEL =====
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: w * 0.15),
+                    child: AnimatedBuilder(
+                      animation: _progressController,
+                      builder: (context, _) {
+                        final percent =
+                        (_progressController.value * 100).toInt();
+
+                        return Column(
+                          children: [
+                            // Label "Loading..." di atas bar
+                            Text(
+                              'Loading...',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 2,
+                              ),
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            // Progress bar
+                            Container(
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: _progressTrack,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(100),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: FractionallySizedBox(
+                                    widthFactor:
+                                    _progressController.value.clamp(
+                                      0.0,
+                                      1.0,
+                                    ),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            Color(0xFFC8956D),
+                                            Color(0xFFE5B98D),
+                                          ],
+                                        ),
+                                        borderRadius:
+                                        BorderRadius.circular(100),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: _primary
+                                                .withValues(alpha: 0.5),
+                                            blurRadius: 8,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            // Percent
+                            Text(
+                              '$percent%',
+                              style: const TextStyle(
+                                color: _primary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
-                );
-              },
-            ),
-          ),
-
-          // ===== MASKOT (frame-by-frame) =====
-          Align(
-            alignment: const Alignment(0, -0.05), // sedikit ke atas
-            child: FadeTransition(
-              opacity: _fadeController,
-              child: AnimatedBuilder(
-                animation: Listenable.merge([
-                  _frameController,
-                  _bobController,
-                ]),
-                builder: (context, _) {
-                  final bob = _bobController.value * 10 - 5;
-                  final sway = math.sin(
-                    _frameController.value * math.pi * 2,
-                  ) *
-                      5;
-                  final tilt = math.sin(
-                    _frameController.value * math.pi * 2,
-                  ) *
-                      0.025;
-
-                  final frameIndex =
-                      (_frameController.value * _frames.length).floor() %
-                          _frames.length;
-
-                  return Transform.translate(
-                    offset: Offset(sway, bob),
-                    child: Transform.rotate(
-                      angle: tilt,
-                      child: AnimatedSwitcher(
-                        duration: Duration(
-                          milliseconds: _frameDurationMs ~/ 2,
-                        ),
-                        switchInCurve: Curves.easeInOut,
-                        switchOutCurve: Curves.easeInOut,
-                        child: Image.asset(
-                          _frames[frameIndex],
-                          key: ValueKey(frameIndex),
-                          width: mascotSize, // ← ✅ 95% lebar layar
-                          fit: BoxFit.contain,
-                          gaplessPlayback: true,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          // ===== LOADING TEXT =====
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: h * 0.10,
-            child: FadeTransition(
-              opacity: _fadeController,
-              child: AnimatedBuilder(
-                animation: _frameController,
-                builder: (context, _) {
-                  final dotsPhase = (_frameController.value * 3) % 1.0;
-                  final dotCount = (dotsPhase * 3).floor() + 1;
-                  return Text(
-                    'Loading${'.' * dotCount}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.5,
-                    ),
-                  );
-                },
+                ],
               ),
             ),
           ),
@@ -221,9 +266,9 @@ class _LoadingPageState extends State<LoadingPage>
       return AnimatedBuilder(
         animation: _bobController,
         builder: (context, _) {
-          final opacity = 0.15 +
+          final opacity = 0.10 +
               (math.sin(_bobController.value * math.pi * 2 + i) * 0.5 + 0.5) *
-                  0.25;
+                  0.20;
 
           return Positioned(
             left: px,
@@ -232,7 +277,7 @@ class _LoadingPageState extends State<LoadingPage>
               width: size,
               height: size,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: opacity),
+                color: _primary.withValues(alpha: opacity),
                 shape: BoxShape.circle,
               ),
             ),

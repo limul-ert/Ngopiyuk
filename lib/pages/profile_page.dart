@@ -21,7 +21,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   bool _pauseNotifications = true;
 
-  static const Color bgColor = Color(0xFF0A0A0A);
+  static const Color bgColor = Color(0xFF0F0F0F); // ← ✅ SAMAKAN
   static const Color cardColor = Color(0xFF181818);
   static const Color dividerColor = Color(0xFF252525);
   static const Color toggleActiveColor = Color(0xFFC7F464);
@@ -138,13 +138,12 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildHeader(canPop),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 120), // ← ✅ padding bottom
                 child: Column(
                   children: [
                     _buildProfileCard(),
                     const SizedBox(height: 18),
 
-                    // ===== GROUP 1: NOTIFIKASI + KONTAK =====
                     _buildGroup([
                       _buildSwitchTile(
                         icon: Icons.notifications_none,
@@ -170,7 +169,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                     const SizedBox(height: 14),
 
-                    // ===== GROUP 2: MENU INFO =====
                     _buildGroup([
                       _buildArrowTile(
                         icon: Icons.info_outline,
@@ -222,9 +220,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // ============================================
-  // HEADER (back button auto-hide kalau nggak bisa pop)
-  // ============================================
   Widget _buildHeader(bool canPop) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),

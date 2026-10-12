@@ -8,7 +8,7 @@ class OrderHistoryPage extends StatelessWidget {
   const OrderHistoryPage({super.key});
 
   static const Color primaryColor = Color(0xFFC8956D);
-  static const Color bgColor = Color(0xFF0A0A0A);
+  static const Color bgColor = Color(0xFF0F0F0F); // ← ✅ SAMAKAN
   static const Color cardColor = Color(0xFF1A1A1A);
   static const Color dividerColor = Color(0xFF252525);
 
@@ -39,9 +39,6 @@ class OrderHistoryPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // HEADER (back button auto-hide)
-  // ============================================
   Widget _buildHeader(BuildContext context, bool canPop) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
@@ -85,9 +82,6 @@ class OrderHistoryPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // EMPTY STATE
-  // ============================================
   Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
@@ -141,12 +135,9 @@ class OrderHistoryPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // ORDER LIST
-  // ============================================
   Widget _buildOrderList(BuildContext context, List<Order> orders) {
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 120), // ← ✅ padding bottom
       itemCount: orders.length,
       itemBuilder: (context, index) {
         final order = orders[index];
@@ -175,7 +166,6 @@ class OrderHistoryPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ===== HEADER: Order ID + Status =====
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
               child: Row(
@@ -198,13 +188,11 @@ class OrderHistoryPage extends StatelessWidget {
 
             Container(height: 1, color: dividerColor),
 
-            // ===== BODY: Info =====
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Cafe name
                   Row(
                     children: [
                       Container(
@@ -233,7 +221,6 @@ class OrderHistoryPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
 
-                  // Tanggal + Jam Ambil
                   Row(
                     children: [
                       _buildIconText(
@@ -254,7 +241,6 @@ class OrderHistoryPage extends StatelessWidget {
                   Container(height: 1, color: dividerColor),
                   const SizedBox(height: 12),
 
-                  // Total + item count
                   Row(
                     children: [
                       Text(
@@ -277,7 +263,6 @@ class OrderHistoryPage extends StatelessWidget {
                     ],
                   ),
 
-                  // ===== TOMBOL LIHAT DETAIL =====
                   const SizedBox(height: 14),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -329,9 +314,6 @@ class OrderHistoryPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // STATUS BADGE
-  // ============================================
   Widget _buildStatusBadge(String status) {
     Color color;
     switch (status.toLowerCase()) {
@@ -373,9 +355,6 @@ class OrderHistoryPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // HELPERS
-  // ============================================
   String _formatDate(DateTime dt) {
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',

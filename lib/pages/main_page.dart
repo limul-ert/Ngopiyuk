@@ -12,25 +12,17 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
-
-  // ← ✅ GlobalKey untuk reload data user
   final GlobalKey<HomePageState> _homeKey = GlobalKey<HomePageState>();
 
   static const Color primaryColor = Color(0xFFC8956D);
-  static const Color bgColor = Color(0xFF0A0A0A);
+  static const Color bgColor = Color(0xFF0F0F0F);
   static const Color cardColor = Color(0xFF181818);
   static const Color dividerColor = Color(0xFF252525);
 
-  // ============================================
-  // HANDLE TAB TAP
-  // ============================================
   void _onTabTap(int index) {
-    // Kalau pindah ke tab Beranda (index 0) dari tab lain
-    // → reload data user biar avatar & nama ke-update
     if (index == 0 && _currentIndex != 0) {
       _homeKey.currentState?.reloadUserData();
     }
-
     setState(() => _currentIndex = index);
   }
 
@@ -38,68 +30,79 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bgColor,
-      body: IndexedStack(
-        index: _currentIndex,
+      // ❌ Tidak pakai bottomNavigationBar lagi
+      // ✅ Navbar ditaruh sebagai overlay di Stack
+      body: Stack(
         children: [
-          HomePage(key: _homeKey),  // ← ✅ pakai key
-          const OrderHistoryPage(),
-          const ProfilePage(),
+          // ===== CONTENT =====
+          IndexedStack(
+            index: _currentIndex,
+            children: [
+              HomePage(key: _homeKey),
+              const OrderHistoryPage(),
+              const ProfilePage(),
+            ],
+          ),
+
+          // ===== FLOATING NAV (overlay) =====
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildFloatingNav(),
+          ),
         ],
       ),
-      bottomNavigationBar: _buildFloatingNav(),
     );
   }
 
   // ============================================
-  // FLOATING NAV CONTAINER
+  // FLOATING NAV
   // ============================================
   Widget _buildFloatingNav() {
-    return Container(
-      color: Colors.transparent,
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-          child: Container(
-            height: 72,
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: dividerColor,
-                width: 1,
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+        child: Container(
+          height: 72,
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(36), // ← full rounded (pill)
+            border: Border.all(
+              color: dividerColor,
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 24,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildNavItem(
-                  0,
-                  Icons.home_outlined,
-                  Icons.home,
-                  'Beranda',
-                ),
-                _buildNavItem(
-                  1,
-                  Icons.receipt_long_outlined,
-                  Icons.receipt_long,
-                  'Riwayat',
-                ),
-                _buildNavItem(
-                  2,
-                  Icons.person_outline,
-                  Icons.person,
-                  'Profil',
-                ),
-              ],
-            ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildNavItem(
+                0,
+                Icons.home_outlined,
+                Icons.home,
+                'Beranda',
+              ),
+              _buildNavItem(
+                1,
+                Icons.receipt_long_outlined,
+                Icons.receipt_long,
+                'Riwayat',
+              ),
+              _buildNavItem(
+                2,
+                Icons.person_outline,
+                Icons.person,
+                'Profil',
+              ),
+            ],
           ),
         ),
       ),
@@ -107,7 +110,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   // ============================================
-  // NAV ITEM — VERTICAL
+  // NAV ITEM
   // ============================================
   Widget _buildNavItem(
       int index,
@@ -118,7 +121,7 @@ class _MainPageState extends State<MainPage> {
     final isActive = _currentIndex == index;
 
     return GestureDetector(
-      onTap: () => _onTabTap(index),  // ← ✅ pakai _onTabTap
+      onTap: () => _onTabTap(index),
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 350),
@@ -129,7 +132,7 @@ class _MainPageState extends State<MainPage> {
         ),
         decoration: BoxDecoration(
           color: isActive ? primaryColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
