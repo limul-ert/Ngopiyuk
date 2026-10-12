@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/order.dart';
 import '../providers/cart_provider.dart';
+import '../widgets/mascot_empty.dart';
 import 'order_detail_page.dart';
 
 class OrderHistoryPage extends StatelessWidget {
   const OrderHistoryPage({super.key});
 
   static const Color primaryColor = Color(0xFFC8956D);
-  static const Color bgColor = Color(0xFF0F0F0F); // ← ✅ SAMAKAN
+  static const Color bgColor = Color(0xFF0F0F0F);
   static const Color cardColor = Color(0xFF1A1A1A);
   static const Color dividerColor = Color(0xFF252525);
 
@@ -82,6 +83,9 @@ class OrderHistoryPage extends StatelessWidget {
     );
   }
 
+  // ============================================
+  // EMPTY STATE — pakai maskot riwayat
+  // ============================================
   Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
@@ -89,6 +93,14 @@ class OrderHistoryPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // ← ✅ MASKOT RIWAYAT
+            const MascotEmpty(
+              imagePath: 'assets/images/mascot/mascot_riwayat.png',
+              width: 290,
+            ),
+
+            const SizedBox(height: 24),
+
             const Text(
               'Belum Ada Riwayat',
               style: TextStyle(
@@ -137,7 +149,7 @@ class OrderHistoryPage extends StatelessWidget {
 
   Widget _buildOrderList(BuildContext context, List<Order> orders) {
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 120), // ← ✅ padding bottom
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
       itemCount: orders.length,
       itemBuilder: (context, index) {
         final order = orders[index];

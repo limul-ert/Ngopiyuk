@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../data/dummy_cafes.dart';
 import '../models/cafe.dart';
-import '../widgets/cafe_image.dart'; // ← ✅ TAMBAH
+import '../widgets/cafe_image.dart';
+import '../widgets/mascot_empty.dart';
 import 'cafe_detail_page.dart';
 
 class SearchPage extends StatefulWidget {
@@ -26,7 +27,6 @@ class _SearchPageState extends State<SearchPage> {
   static const Color bgColor = Color(0xFF0F0F0F);
   static const Color cardColor = Color(0xFF1A1A1A);
 
-  // ===== FILTER KAFE =====
   List<Cafe> get _results {
     if (_query.trim().isEmpty) return dummyCafes;
     final q = _query.toLowerCase();
@@ -84,7 +84,6 @@ class _SearchPageState extends State<SearchPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // ===== SEARCH BAR =====
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: Container(
@@ -129,7 +128,6 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ),
 
-            // ===== HASIL / EMPTY STATE =====
             Expanded(
               child: results.isEmpty
                   ? _buildEmptyState()
@@ -141,33 +139,49 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  // ===== EMPTY STATE =====
+  // ============================================
+  // EMPTY STATE — pakai maskot penelusuran
+  // ============================================
   Widget _buildEmptyState() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search_off, color: Colors.grey, size: 80),
-          SizedBox(height: 16),
-          Text(
-            'Kafe tidak ditemukan',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // ← ✅ MASKOT PENELUSURAN
+            const MascotEmpty(
+              imagePath: 'assets/images/mascot/mascot_penelusuran.png',
+              width: 290,
             ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Coba kata kunci lain',
-            style: TextStyle(color: Colors.grey, fontSize: 13),
-          ),
-        ],
+
+            const SizedBox(height: 24),
+
+            const Text(
+              'Kafe tidak ditemukan',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Coba kata kunci lain atau cek\nkategori yang tersedia ya!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 13,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // ===== LIST HASIL =====
   Widget _buildResultList(List<Cafe> results) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,7 +225,6 @@ class _SearchPageState extends State<SearchPage> {
         ),
         child: Row(
           children: [
-            // ===== GAMBAR (REVISI) =====
             CafeImage(
               source: cafe.imageUrl,
               width: 70,
@@ -219,8 +232,6 @@ class _SearchPageState extends State<SearchPage> {
               borderRadius: BorderRadius.circular(10),
             ),
             const SizedBox(width: 12),
-
-            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,8 +292,6 @@ class _SearchPageState extends State<SearchPage> {
                 ],
               ),
             ),
-
-            // Tombol favorit
             IconButton(
               icon: Icon(
                 isFav ? Icons.favorite : Icons.favorite_border,
