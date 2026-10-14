@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'loading_page.dart';
+import 'main_page.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -33,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // ============================================
-  // HANDLE LOGIN → LANGSUNG KE LOADING PAGE
+  // HANDLE LOGIN → LANGSUNG KE MAINPAGE
   // ============================================
   Future<void> _handleLogin() async {
     FocusScope.of(context).unfocus();
@@ -57,10 +57,10 @@ class _LoginPageState extends State<LoginPage> {
 
     if (!mounted) return;
 
-    // Navigate ke Loading Page
+    // ← ✅ LANGSUNG KE MAINPAGE (skip loading)
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const LoadingPage()),
+      MaterialPageRoute(builder: (context) => const MainPage()),
     );
   }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'loading_page.dart'; // ← ✅ GANTI dari main_page.dart
+import 'main_page.dart';
 import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -34,7 +34,6 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  // ===== SNACKBAR HELPER =====
   void _showSnackBar({
     required IconData icon,
     required String message,
@@ -80,7 +79,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   // ============================================
-  // HANDLE REGISTER → LANGSUNG KE LOADING PAGE
+  // HANDLE REGISTER → LANGSUNG KE MAINPAGE
   // ============================================
   Future<void> _handleRegister() async {
     FocusScope.of(context).unfocus();
@@ -101,10 +100,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
     if (!mounted) return;
 
-    // ← ✅ Navigate ke Loading Page
+    // ← ✅ LANGSUNG KE MAINPAGE (skip loading)
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const LoadingPage()),
+      MaterialPageRoute(builder: (_) => const MainPage()),
           (route) => false,
     );
   }
@@ -130,7 +129,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   // ============================================
-  // DESKTOP — SPLIT SCREEN
+  // DESKTOP
   // ============================================
   Widget _buildDesktopLayout() {
     return Row(
@@ -668,9 +667,6 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  // ============================================
-  // INPUT FIELD BUILDER
-  // ============================================
   Widget _buildInputField({
     required TextEditingController controller,
     required String hint,

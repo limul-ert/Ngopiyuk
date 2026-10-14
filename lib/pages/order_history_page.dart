@@ -92,14 +92,15 @@ class OrderHistoryPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // ← ✅ MASKOT RIWAYAT
+            // ← ✅ MASKOT RIWAYAT (perbesar 280)
             const MascotEmpty(
               imagePath: 'assets/images/mascot/mascot_riwayat.png',
-              width: 290,
+              width: 280,
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
             const Text(
               'Belum Ada Riwayat',

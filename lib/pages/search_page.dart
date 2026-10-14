@@ -148,14 +148,15 @@ class _SearchPageState extends State<SearchPage> {
         padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // ← ✅ MASKOT PENELUSURAN
+            // ← ✅ MASKOT PENELUSURAN (perbesar 280)
             const MascotEmpty(
               imagePath: 'assets/images/mascot/mascot_penelusuran.png',
-              width: 290,
+              width: 300,
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
             const Text(
               'Kafe tidak ditemukan',
