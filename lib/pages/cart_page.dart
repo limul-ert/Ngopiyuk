@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/cart_item.dart';
 import '../providers/cart_provider.dart';
+import '../widgets/cafe_image.dart'; // ← ✅ TAMBAH
 import 'checkout_page.dart';
 
 class CartPage extends StatelessWidget {
@@ -22,17 +23,12 @@ class CartPage extends StatelessWidget {
           builder: (context, cart, _) {
             return Column(
               children: [
-                // ===== HEADER =====
                 _buildHeader(context, cart),
-
-                // ===== EMPTY STATE / LIST =====
                 Expanded(
                   child: cart.items.isEmpty
                       ? _buildEmptyState(context)
                       : _buildCartList(context, cart),
                 ),
-
-                // ===== BOTTOM SUMMARY =====
                 if (cart.items.isNotEmpty)
                   _buildBottomSummary(context, cart),
               ],
@@ -43,15 +39,11 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // HEADER
-  // ============================================
   Widget _buildHeader(BuildContext context, CartProvider cart) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       child: Row(
         children: [
-          // Back button
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
@@ -72,7 +64,6 @@ class CartPage extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          // Title
           Text(
             'Keranjang (${cart.totalQuantity})',
             style: const TextStyle(
@@ -82,7 +73,6 @@ class CartPage extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          // Clear button (kalau ada item)
           if (cart.items.isNotEmpty)
             GestureDetector(
               onTap: () => _confirmClearCart(context, cart),
@@ -110,9 +100,6 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // EMPTY STATE (TANPA ICON — CLEAN)
-  // ============================================
   Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
@@ -120,7 +107,6 @@ class CartPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Judul
             const Text(
               'Keranjang Kosong',
               style: TextStyle(
@@ -130,8 +116,6 @@ class CartPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-
-            // Deskripsi
             const Text(
               'Yuk, mulai pesan menu favoritmu dari\ncafe-cafe terbaik di Madiun.',
               textAlign: TextAlign.center,
@@ -142,8 +126,6 @@ class CartPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-
-            // Tombol CTA
             ElevatedButton.icon(
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.search, size: 18),
@@ -167,9 +149,6 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // CART LIST
-  // ============================================
   Widget _buildCartList(BuildContext context, CartProvider cart) {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
@@ -200,35 +179,20 @@ class CartPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // ===== GAMBAR =====
-          ClipRRect(
+          // ← ✅ GANTI Image.network → CafeImage
+          CafeImage(
+            source: item.item.imageUrl,
+            width: 80,
+            height: 80,
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              item.item.imageUrl,
-              width: 80,
-              height: 80,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                width: 80,
-                height: 80,
-                color: bgColor,
-                child: const Icon(
-                  Icons.local_cafe,
-                  color: primaryColor,
-                  size: 28,
-                ),
-              ),
-            ),
           ),
           const SizedBox(width: 12),
 
-          // ===== INFO =====
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Nama menu
                 Text(
                   item.item.name,
                   maxLines: 2,
@@ -241,8 +205,6 @@ class CartPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-
-                // Nama cafe
                 Text(
                   item.cafeName,
                   maxLines: 1,
@@ -253,8 +215,6 @@ class CartPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-
-                // Harga
                 Text(
                   'Rp ${item.item.price.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
                   style: const TextStyle(
@@ -264,11 +224,8 @@ class CartPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-
-                // Quantity + delete row
                 Row(
                   children: [
-                    // Quantity controls
                     Container(
                       decoration: BoxDecoration(
                         color: bgColor,
@@ -285,8 +242,7 @@ class CartPage extends StatelessWidget {
                             onTap: () => cart.decrement(index),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
                             child: Text(
                               '${item.quantity}',
                               style: const TextStyle(
@@ -304,8 +260,6 @@ class CartPage extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-
-                    // Delete button
                     GestureDetector(
                       onTap: () => _confirmRemoveItem(
                         context,
@@ -356,9 +310,6 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // BOTTOM SUMMARY
-  // ============================================
   Widget _buildBottomSummary(BuildContext context, CartProvider cart) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
@@ -373,28 +324,21 @@ class CartPage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Subtotal
           _summaryRow(
             'Subtotal',
             'Rp ${cart.subtotal.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
           ),
           const SizedBox(height: 8),
-
-          // Biaya layanan
           _summaryRow(
             'Biaya Layanan',
             'Rp ${CartProvider.serviceFee.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
           ),
           const SizedBox(height: 12),
-
-          // Divider
           Container(
             height: 1,
             color: Colors.white.withValues(alpha: 0.08),
           ),
           const SizedBox(height: 12),
-
-          // Total
           Row(
             children: [
               const Text(
@@ -417,8 +361,6 @@ class CartPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-
-          // Tombol Checkout
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -484,9 +426,6 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // DIALOG: HAPUS SEMUA
-  // ============================================
   void _confirmClearCart(BuildContext context, CartProvider cart) {
     showDialog(
       context: context,
@@ -540,9 +479,6 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // DIALOG: HAPUS 1 ITEM
-  // ============================================
   void _confirmRemoveItem(
       BuildContext context,
       CartProvider cart,

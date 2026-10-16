@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/order.dart';
-import '../widgets/cafe_image.dart'; // ← ✅ TAMBAH
+import '../widgets/cafe_image.dart';
 
 class OrderDetailPage extends StatelessWidget {
   final Order order;
@@ -36,9 +36,6 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // HEADER
-  // ============================================
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
@@ -79,9 +76,6 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // TICKET CARD
-  // ============================================
   Widget _buildTicketCard() {
     return Container(
       decoration: BoxDecoration(
@@ -91,9 +85,8 @@ class OrderDetailPage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // ===== SECTION: AMBIL DI =====
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               border: Border(
                 left: BorderSide(color: primaryColor, width: 3),
               ),
@@ -118,7 +111,6 @@ class OrderDetailPage extends StatelessWidget {
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: -0.2,
                     height: 1.3,
                   ),
                 ),
@@ -152,7 +144,6 @@ class OrderDetailPage extends StatelessWidget {
 
           _buildDashedDivider(),
 
-          // ===== SECTION: DETAIL PESANAN =====
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
             child: Column(
@@ -168,7 +159,6 @@ class OrderDetailPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-
                 _detailRow('Order ID', order.id),
                 const SizedBox(height: 12),
                 _detailRow('Nama', order.namaPenerima),
@@ -186,7 +176,6 @@ class OrderDetailPage extends StatelessWidget {
                 _detailRow('Status', order.status, isHighlight: true),
                 const SizedBox(height: 12),
                 _detailRow('Tanggal Order', _formatDate(order.tanggal)),
-
                 if (order.catatan.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   _detailRow('Catatan', order.catatan),
@@ -197,9 +186,7 @@ class OrderDetailPage extends StatelessWidget {
 
           _buildDashedDivider(),
 
-          // ============================================
-          // SECTION: ITEM PESANAN (DENGAN FOTO)
-          // ============================================
+          // ===== SECTION: ITEM PESANAN =====
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
             child: Column(
@@ -215,13 +202,11 @@ class OrderDetailPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-
                 ...order.items.map((item) => Padding(
                   padding: const EdgeInsets.only(bottom: 14),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // ===== FOTO MENU =====
+                      // ← ✅ CafeImage (support asset & network)
                       CafeImage(
                         source: item.item.imageUrl,
                         width: 56,
@@ -229,13 +214,10 @@ class OrderDetailPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       const SizedBox(width: 12),
-
-                      // ===== INFO ITEM =====
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Nama menu
                             Text(
                               item.item.name,
                               maxLines: 2,
@@ -248,8 +230,6 @@ class OrderDetailPage extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 6),
-
-                            // Quantity + harga satuan
                             Row(
                               children: [
                                 Container(
@@ -283,10 +263,7 @@ class OrderDetailPage extends StatelessWidget {
                           ],
                         ),
                       ),
-
                       const SizedBox(width: 8),
-
-                      // ===== SUBTOTAL =====
                       Text(
                         'Rp ${item.subtotal.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
                         style: const TextStyle(
@@ -304,7 +281,6 @@ class OrderDetailPage extends StatelessWidget {
 
           _buildDashedDivider(),
 
-          // ===== SECTION: PEMBAYARAN =====
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
             child: Column(
@@ -351,9 +327,6 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // DASHED DIVIDER
-  // ============================================
   Widget _buildDashedDivider() {
     return SizedBox(
       height: 1,
@@ -371,9 +344,6 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // DETAIL ROW
-  // ============================================
   Widget _detailRow(
       String label,
       String value, {
@@ -426,9 +396,6 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // SUMMARY ROW
-  // ============================================
   Widget _summaryRow(String label, String value) {
     return Row(
       children: [
@@ -452,9 +419,6 @@ class OrderDetailPage extends StatelessWidget {
     );
   }
 
-  // ============================================
-  // HELPERS
-  // ============================================
   String _formatDate(DateTime dt) {
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
