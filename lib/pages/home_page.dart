@@ -110,15 +110,15 @@ class HomePageState extends State<HomePage> {
 
   bool _isFavorite(String cafeName) => _favoriteCafeNames.contains(cafeName);
 
-  void _toggleFavorite(String cafeName) {
-    setState(() {
-      if (_favoriteCafeNames.contains(cafeName)) {
-        _favoriteCafeNames.remove(cafeName);
-      } else {
-        _favoriteCafeNames.add(cafeName);
-      }
-    });
-  }
+    void _toggleFavorite(String cafeName) {
+      setState(() {
+        if (_favoriteCafeNames.contains(cafeName)) {
+          _favoriteCafeNames.remove(cafeName);
+        } else {
+          _favoriteCafeNames.add(cafeName);
+        }
+      });
+    }
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).clearSnackBars();

@@ -1,14 +1,38 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- ===== PERMISSION UNTUK IMAGE PICKER ===== -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- ===== IZIN APLIKASI ===== -->
+    <!-- Izin Internet (Wajib buat gambar Unsplash/Picsum) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Izin Kamera & Galeri (Buat Edit Profil) -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- Izin Telepon -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <!-- Queries untuk fitur Buka Maps, Telepon & Image Picker -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+            <data android:scheme="tel" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
 
     <application
-        android:label="ngopiyuk"
+        android:label="NgopiYuk"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -31,10 +55,4 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT"/>
-            <data android:mimeType="text/plain"/>
-        </intent>
-    </queries>
 </manifest>
