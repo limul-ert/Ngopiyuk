@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http; // TAMBAHAN
-import 'package:package_info_plus/package_info_plus.dart'; // TAMBAHAN
-import 'package:url_launcher/url_launcher.dart'; // TAMBAHAN
-import 'package:version/version.dart'; // TAMBAHAN
+import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:version/version.dart';
 
 import '../data/dummy_cafes.dart';
 import '../models/cafe.dart';
@@ -41,45 +41,63 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadUserData();
-    _checkForUpdate(); // Panggil fungsi cek update
+    // Beri jeda 2 detik biar UI home ke-load dulu, baru cek update
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) _checkForUpdate();
+    });
   }
 
   // ============================================
-  // FITUR AUTO UPDATE DARI GITHUB API (100% JALAN)
+  // FITUR AUTO UPDATE + DEBUG SNACKBAR
   // ============================================
   Future<void> _checkForUpdate() async {
     try {
-      // 1. Ambil info versi aplikasi yang lagi dipakai sekarang
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = Version.parse(packageInfo.version);
 
-      // 2. Tembak API GitHub buat dapetin rilis terbaru
+      _showSnackBar('1. Versi HP saat ini: $currentVersion', Colors.blue);
+
       final response = await http.get(
         Uri.parse('https://api.github.com/repos/limul-ert/Ngopiyuk/releases/latest'),
         headers: {'User-Agent': 'NgopiYuk-App'},
       );
 
+      _showSnackBar('2. Status GitHub API: ${response.statusCode}', Colors.orange);
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
-        // Ambil nama tag (misal: "v1.0.2"), lalu hapus huruf 'v'
         final String latestVersionString = data['tag_name'].toString().replaceAll('v', '');
         final latestVersion = Version.parse(latestVersionString);
 
-        // 3. Bandingkan versi
+        _showSnackBar('3. Versi di GitHub: $latestVersion', Colors.purple);
+
         if (latestVersion > currentVersion) {
-          // Cari link file APK di halaman rilis
-          String apkUrl = data['html_url']; // Fallback ke halaman rilis
+          _showSnackBar('4. Update DITEMUKAN!', Colors.green);
+
+          String apkUrl = data['html_url'];
           if (data['assets'] != null && data['assets'].isNotEmpty) {
             apkUrl = data['assets'][0]['browser_download_url'];
           }
 
           if (mounted) _showUpdateDialog(latestVersionString, apkUrl);
+        } else {
+          _showSnackBar('Versi HP sudah paling baru.', Colors.green);
         }
       }
     } catch (e) {
-      debugPrint('Gagal cek update: $e');
+      _showSnackBar('ERROR: $e', Colors.red); // Bakal muncul kalau ada masalah
     }
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: color,
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   void _showUpdateDialog(String newVersion, String downloadUrl) {
@@ -105,7 +123,6 @@ class HomePageState extends State<HomePage> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              // Buka browser untuk download APK
               final url = Uri.parse(downloadUrl);
               if (await canLaunchUrl(url)) {
                 await launchUrl(url, mode: LaunchMode.externalApplication);
@@ -121,8 +138,10 @@ class HomePageState extends State<HomePage> {
       ),
     );
   }
-  // ============================================
 
+  // ============================================
+  // FUNGSI UI LAINNYA (TIDAK DIUBAH)
+  // ============================================
   Future<void> reloadUserData() async {
     await _loadUserData();
   }
@@ -195,18 +214,6 @@ class HomePageState extends State<HomePage> {
     });
   }
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: cardColor,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
   void _onCafeTap(Cafe cafe) {
     Navigator.push(
       context,
@@ -273,7 +280,7 @@ class HomePageState extends State<HomePage> {
   }
 
   void _showComingSoon(String title) {
-    _showSnackBar('$title - Segera Hadir');
+    _showSnackBar('$title - Segera Hadir', cardColor);
   }
 
   @override
