@@ -1,7 +1,7 @@
 name: ngopi_yuk
 description: "Aplikasi Discovery Cafe Madiun - Tugas UTS Flutter"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.2+3
 
 environment:
   sdk: ^3.13.1
@@ -16,7 +16,7 @@ dependencies:
   provider: ^6.1.2
   intl: ^0.19.0
 
-  # Package untuk fitur Auto-Update dari GitHub (Cara Baru)
+  # Package untuk fitur Auto-Update dari GitHub
   http: ^1.1.0
   package_info_plus: ^8.0.0
   version: ^3.0.0
