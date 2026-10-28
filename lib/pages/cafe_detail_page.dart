@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart'; // IMPORT SHARE PLUS
 import '../models/cafe.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/cafe_image.dart';
@@ -101,15 +102,10 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
     );
   }
 
-  // ============================================
-  // BUKA GOOGLE MAPS
-  // ============================================
   Future<void> _openMaps() async {
     final cafe = widget.cafe;
-
     final query = '${cafe.name}, ${cafe.address}';
     final encodedQuery = Uri.encodeComponent(query);
-
     final url = Uri.parse(
       'https://www.google.com/maps/search/?api=1&query=$encodedQuery',
     );
@@ -122,8 +118,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
           'https://www.google.com/maps/search/?api=1&query=${cafe.latitude},${cafe.longitude}',
         );
         if (await canLaunchUrl(fallbackUrl)) {
-          await launchUrl(fallbackUrl,
-              mode: LaunchMode.externalApplication);
+          await launchUrl(fallbackUrl, mode: LaunchMode.externalApplication);
         } else {
           _showError('Tidak bisa membuka Google Maps');
         }
@@ -161,61 +156,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
     );
   }
 
-  // ============================================
-  // TAP PROMO → ADD TO CART + BUKA CART PAGE
-  // ============================================
-  void _onPromoTap(Promo promo) {
-    final cart = context.read<CartProvider>();
-
-    // Buat MenuItem dari promo
-    final item = MenuItem(
-      name: promo.title,
-      price: promo.price,
-      imageUrl: promo.imageUrl,
-      category: 'Promo',
-    );
-
-    // Tambah ke cart
-    cart.addItem(item, promo.cafeName);
-
-    // Snackbar
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.black, size: 20),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'Promo "${promo.title}" ditambahkan ke keranjang',
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: primaryColor,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
-
-    // Buka halaman cart
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const CartPage()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final cafe = widget.cafe;
@@ -225,7 +165,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
       backgroundColor: bgColor,
       body: CustomScrollView(
         slivers: [
-          // ===== HERO IMAGE =====
           SliverAppBar(
             expandedHeight: 260,
             pinned: true,
@@ -243,7 +182,29 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
               onPressed: () => Navigator.pop(context),
             ),
             actions: [
-              // ===== ICON CART (DENGAN BADGE) =====
+              // ===== ICON SHARE (UDAH DIPERBAIKI) =====
+              IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.share,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                onPressed: () {
+                  SharePlus.instance.share(
+                    ShareParams(
+                      text: 'Yuk ngopi di ${cafe.name}! ☕\n\nLokasi: ${cafe.address}\n\nTemukan cafe terbaik di Madiun lewat aplikasi NgopiYuk!',
+                    ),
+                  );
+                },
+              ),
+              // ===== ICON CART =====
               Consumer<CartProvider>(
                 builder: (context, cart, _) {
                   return Stack(
@@ -335,7 +296,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
             ),
           ),
 
-          // ===== INFO CAFE =====
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -445,9 +405,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
             ),
           ),
 
-          // ============================================
-          // PROMO BANNER — muncul kalau cafe punya promo
-          // ============================================
           if (cafe.promo != null)
             SliverToBoxAdapter(
               child: Padding(
@@ -456,7 +413,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
               ),
             ),
 
-          // ===== TAB PILLS (STICKY) =====
           SliverPersistentHeader(
             pinned: true,
             delegate: _TabPillsHeader(
@@ -471,7 +427,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
             ),
           ),
 
-          // ===== MENU LIST =====
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             sliver: SliverList(
@@ -535,14 +490,10 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
     );
   }
 
-  // ============================================
-  // PROMO BANNER (TAPPABLE)
-  // ============================================
   Widget _buildPromoBanner(Promo promo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section title
         Row(
           children: [
             Container(
@@ -573,8 +524,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
           ],
         ),
         const SizedBox(height: 12),
-
-        // Banner card (tappable)
         GestureDetector(
           onTap: () => _onPromoTap(promo),
           child: ClipRRect(
@@ -668,6 +617,52 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
     );
   }
 
+  void _onPromoTap(Promo promo) {
+    final cart = context.read<CartProvider>();
+    final item = MenuItem(
+      name: promo.title,
+      price: promo.price,
+      imageUrl: promo.imageUrl,
+      category: 'Promo',
+    );
+    cart.addItem(item, promo.cafeName);
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.black, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Promo "${promo.title}" ditambahkan ke keranjang',
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: primaryColor,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CartPage()),
+    );
+  }
+
   Widget _infoChip(IconData icon, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -707,9 +702,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
     );
   }
 
-  // ============================================
-  // MENU CARD DENGAN TOMBOL "BUY NOW"
-  // ============================================
   Widget _menuCard(MenuItem item) {
     return Consumer<CartProvider>(
       builder: (context, cart, _) {
@@ -839,9 +831,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
   }
 }
 
-// ============================================
-// TAB PILLS HEADER (STICKY) — DENGAN ICON
-// ============================================
 class _TabPillsHeader extends SliverPersistentHeaderDelegate {
   final List<String> categories;
   final int selectedIndex;

@@ -21,6 +21,9 @@ dependencies:
   package_info_plus: ^8.0.0
   version: ^3.0.0
 
+  # Package untuk fitur Share (Bagikan)
+  share_plus: ^10.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
