@@ -1,7 +1,7 @@
 name: ngopi_yuk
 description: "Aplikasi Discovery Cafe Madiun - Tugas UTS Flutter"
 publish_to: 'none'
-version: 1.0.2+3
+version: 1.0.4+5
 
 environment:
   sdk: ^3.13.1
