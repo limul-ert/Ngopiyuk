@@ -13,7 +13,7 @@ import 'favorites_page.dart';
 import 'search_page.dart';
 import 'cafe_list_page.dart';
 
-// Import untuk fitur Auto-Update
+// Package Auto-Update
 import 'package:github_release_apk_updater/github_release_apk_updater.dart';
 import 'package:version/version.dart';
 
@@ -40,11 +40,11 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadUserData();
-    _checkForUpdate(); // ← Panggil fungsi cek update pas aplikasi dibuka
+    _checkForUpdate(); // Panggil cek update
   }
 
   // ============================================
-  // FITUR AUTO UPDATE DARI GITHUB
+  // FITUR AUTO UPDATE DARI GITHUB (FIXED)
   // ============================================
   Future<void> _checkForUpdate() async {
     final updater = GithubReleaseApkUpdater();
@@ -53,24 +53,24 @@ class HomePageState extends State<HomePage> {
     try {
       final supportedAbis = await updater.getSupportedAbis();
 
-      // Ambil data rilis terbaru dari GitHub (Pastikan username & repo sesuai)
+      // Ambil data rilis terbaru
       final release = await apiService.getLatestGithubAPKRelease(
-        ownerGithub: 'limul-ert',       // Username GitHub kamu
-        repositoryGithub: 'Ngopiyuk',   // Nama Repository kamu
+        ownerGithub: 'limul-ert',
+        repositoryGithub: 'Ngopiyuk',
+        apkKeyName: '', // <-- Wajib ditambahkan
         supportedAbis: supportedAbis,
       );
 
       if (release != null) {
         final currentVersion = await updater.getCurrentAppVersion();
 
-        // Bandingkan versi di GitHub vs versi di HP
         final isNewer = VersionComparator().isNewerVersion(
           release.version,
           currentVersion,
         );
 
         if (isNewer && mounted) {
-          _showUpdateDialog(release);
+          _showUpdateDialog(release); // Tipe data sekarang GithubAPKRelease
         }
       }
     } catch (e) {
@@ -78,7 +78,7 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  void _showUpdateDialog(GithubRelease release) {
+  void _showUpdateDialog(GithubAPKRelease release) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -99,10 +99,23 @@ class HomePageState extends State<HomePage> {
             child: const Text('Nanti', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
+              // Proses Download & Install
               final downloader = ApkDownloaderService();
-              downloader.downloadApkAndInstall(release);
+              final updater = GithubReleaseApkUpdater();
+
+              final filePath = await downloader.downloadAPK(
+                release.apkUrl,
+                null, // token (biarkan null kalau repo public)
+                    (received, total) {
+                  // Bisa tambahkan progress bar di sini kalau mau
+                },
+              );
+
+              if (filePath != null) {
+                await updater.installApk(filePath);
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryColor,
@@ -152,18 +165,10 @@ class HomePageState extends State<HomePage> {
   Widget _buildAvatarContent() {
     if (_avatarImageBytes != null) {
       return ClipOval(
-        child: Image.memory(
-          _avatarImageBytes!,
-          width: 44,
-          height: 44,
-          fit: BoxFit.cover,
-        ),
+        child: Image.memory(_avatarImageBytes!, width: 44, height: 44, fit: BoxFit.cover),
       );
     }
-    return Text(
-      _userAvatar,
-      style: const TextStyle(fontSize: 24),
-    );
+    return Text(_userAvatar, style: const TextStyle(fontSize: 24));
   }
 
   List<Cafe> get _filteredCafes {
@@ -181,9 +186,7 @@ class HomePageState extends State<HomePage> {
   }
 
   List<Cafe> get _favoriteCafes {
-    return dummyCafes
-        .where((c) => _favoriteCafeNames.contains(c.name))
-        .toList();
+    return dummyCafes.where((c) => _favoriteCafeNames.contains(c.name)).toList();
   }
 
   bool _isFavorite(String cafeName) => _favoriteCafeNames.contains(cafeName);
@@ -293,22 +296,13 @@ class HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              StaggeredEntrance(
-                index: 0,
-                child: _buildHeader(),
-              ),
+              StaggeredEntrance(index: 0, child: _buildHeader()),
               const SizedBox(height: 16),
-              StaggeredEntrance(
-                index: 1,
-                child: PromoCarousel(promos: dummyPromos),
-              ),
+              StaggeredEntrance(index: 1, child: PromoCarousel(promos: dummyPromos)),
               const SizedBox(height: 24),
               StaggeredEntrance(
                 index: 2,
-                child: _buildSectionTitle(
-                  'Rating Tertinggi',
-                  onViewAll: _openTopRatedPage,
-                ),
+                child: _buildSectionTitle('Rating Tertinggi', onViewAll: _openTopRatedPage),
               ),
               const SizedBox(height: 12),
               SizedBox(
@@ -322,20 +316,14 @@ class HomePageState extends State<HomePage> {
                     return StaggeredEntrance(
                       index: 3 + index,
                       child: PressableCard(
-                        child: CafeCardHorizontal(
-                          cafe: cafe,
-                          onTap: () => _onCafeTap(cafe),
-                        ),
+                        child: CafeCardHorizontal(cafe: cafe, onTap: () => _onCafeTap(cafe)),
                       ),
                     );
                   },
                 ),
               ),
               const SizedBox(height: 24),
-              StaggeredEntrance(
-                index: 8,
-                child: _buildSectionTitle('Kategori'),
-              ),
+              StaggeredEntrance(index: 8, child: _buildSectionTitle('Kategori')),
               const SizedBox(height: 12),
               StaggeredEntrance(
                 index: 9,
@@ -350,10 +338,7 @@ class HomePageState extends State<HomePage> {
               const SizedBox(height: 24),
               StaggeredEntrance(
                 index: 10,
-                child: _buildSectionTitle(
-                  'Semua Cafe',
-                  onViewAll: _openAllCafesPage,
-                ),
+                child: _buildSectionTitle('Semua Cafe', onViewAll: _openAllCafesPage),
               ),
               const SizedBox(height: 12),
               _buildCafeList(),
@@ -389,11 +374,7 @@ class HomePageState extends State<HomePage> {
               Expanded(
                 child: Text(
                   '$_greeting, $_userName!',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -402,16 +383,12 @@ class HomePageState extends State<HomePage> {
                 width: 40,
                 height: 40,
                 margin: const EdgeInsets.only(right: 6),
-                decoration: const BoxDecoration(
-                  color: cardColor,
-                  shape: BoxShape.circle,
-                ),
+                decoration: const BoxDecoration(color: cardColor, shape: BoxShape.circle),
                 child: Stack(
                   children: [
                     IconButton(
                       padding: EdgeInsets.zero,
-                      icon: const Icon(Icons.favorite_border,
-                          color: Colors.white, size: 20),
+                      icon: const Icon(Icons.favorite_border, color: Colors.white, size: 20),
                       onPressed: _openFavorites,
                     ),
                     if (_favoriteCafes.isNotEmpty)
@@ -420,21 +397,11 @@ class HomePageState extends State<HomePage> {
                         top: 2,
                         child: Container(
                           padding: const EdgeInsets.all(3),
-                          decoration: const BoxDecoration(
-                            color: primaryColor,
-                            shape: BoxShape.circle,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 14,
-                            minHeight: 14,
-                          ),
+                          decoration: const BoxDecoration(color: primaryColor, shape: BoxShape.circle),
+                          constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
                           child: Text(
                             '${_favoriteCafes.length}',
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 8,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: const TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -445,14 +412,10 @@ class HomePageState extends State<HomePage> {
               Container(
                 width: 40,
                 height: 40,
-                decoration: const BoxDecoration(
-                  color: cardColor,
-                  shape: BoxShape.circle,
-                ),
+                decoration: const BoxDecoration(color: cardColor, shape: BoxShape.circle),
                 child: IconButton(
                   padding: EdgeInsets.zero,
-                  icon: const Icon(Icons.notifications_none,
-                      color: Colors.white, size: 20),
+                  icon: const Icon(Icons.notifications_none, color: Colors.white, size: 20),
                   onPressed: () => _showComingSoon('Notifikasi'),
                 ),
               ),
@@ -467,25 +430,16 @@ class HomePageState extends State<HomePage> {
               decoration: BoxDecoration(
                 color: cardColor,
                 borderRadius: BorderRadius.circular(22),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.08),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.search,
-                    color: primaryColor,
-                    size: 20,
-                  ),
+                  const Icon(Icons.search, color: primaryColor, size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Mau ngopi apa hari ini?',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.4),
-                        fontSize: 13,
-                      ),
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 13),
                     ),
                   ),
                 ],
@@ -503,25 +457,12 @@ class HomePageState extends State<HomePage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
           if (onViewAll != null)
             TextButton(
               onPressed: onViewAll,
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                minimumSize: const Size(0, 30),
-              ),
-              child: const Text(
-                'Lihat Semua',
-                style: TextStyle(color: primaryColor, fontSize: 12),
-              ),
+              style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), minimumSize: const Size(0, 30)),
+              child: const Text('Lihat Semua', style: TextStyle(color: primaryColor, fontSize: 12)),
             ),
         ],
       ),
@@ -539,10 +480,7 @@ class HomePageState extends State<HomePage> {
             children: [
               Icon(Icons.search_off, color: Colors.grey, size: 48),
               SizedBox(height: 12),
-              Text(
-                'Belum ada cafe di kategori ini',
-                style: TextStyle(color: Colors.grey),
-              ),
+              Text('Belum ada cafe di kategori ini', style: TextStyle(color: Colors.grey)),
             ],
           ),
         ),
@@ -559,10 +497,7 @@ class HomePageState extends State<HomePage> {
             StaggeredEntrance(
               index: 11 + i,
               child: PressableCard(
-                child: CafeCardVertical(
-                  cafe: cafes[i],
-                  onTap: () => _onCafeTap(cafes[i]),
-                ),
+                child: CafeCardVertical(cafe: cafes[i], onTap: () => _onCafeTap(cafes[i])),
               ),
             ),
         ],
@@ -579,24 +514,13 @@ class HomePageState extends State<HomePage> {
           Container(
             padding: const EdgeInsets.fromLTRB(16, 48, 16, 24),
             decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.05),
-                ),
-              ),
+              border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
             ),
             child: Row(
               children: const [
                 Icon(Icons.coffee, color: primaryColor, size: 32),
                 SizedBox(width: 10),
-                Text(
-                  'NgopiYuk',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text('NgopiYuk', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -622,23 +546,12 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildDrawerItem(
-      IconData icon,
-      String title, {
-        bool active = false,
-        VoidCallback? onTap,
-      }) {
+  Widget _buildDrawerItem(IconData icon, String title, {bool active = false, VoidCallback? onTap}) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: active ? primaryColor : Colors.grey,
-      ),
+      leading: Icon(icon, color: active ? primaryColor : Colors.grey),
       title: Text(
         title,
-        style: TextStyle(
-          color: active ? Colors.white : Colors.grey,
-          fontWeight: active ? FontWeight.bold : FontWeight.normal,
-        ),
+        style: TextStyle(color: active ? Colors.white : Colors.grey, fontWeight: active ? FontWeight.bold : FontWeight.normal),
       ),
       onTap: onTap ?? () => Navigator.pop(context),
     );
