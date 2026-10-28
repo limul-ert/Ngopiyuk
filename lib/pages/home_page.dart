@@ -2,6 +2,11 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http; // TAMBAHAN
+import 'package:package_info_plus/package_info_plus.dart'; // TAMBAHAN
+import 'package:url_launcher/url_launcher.dart'; // TAMBAHAN
+import 'package:version/version.dart'; // TAMBAHAN
+
 import '../data/dummy_cafes.dart';
 import '../models/cafe.dart';
 import '../widgets/promo_carousel.dart';
@@ -12,10 +17,6 @@ import 'cafe_detail_page.dart';
 import 'favorites_page.dart';
 import 'search_page.dart';
 import 'cafe_list_page.dart';
-
-// Package Auto-Update
-import 'package:github_release_apk_updater/github_release_apk_updater.dart';
-import 'package:version/version.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -40,45 +41,48 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadUserData();
-    _checkForUpdate(); // Panggil cek update
+    _checkForUpdate(); // Panggil fungsi cek update
   }
 
   // ============================================
-  // FITUR AUTO UPDATE DARI GITHUB (FIXED)
+  // FITUR AUTO UPDATE DARI GITHUB API (100% JALAN)
   // ============================================
   Future<void> _checkForUpdate() async {
-    final updater = GithubReleaseApkUpdater();
-    final apiService = GithubApiService();
-
     try {
-      final supportedAbis = await updater.getSupportedAbis();
+      // 1. Ambil info versi aplikasi yang lagi dipakai sekarang
+      final packageInfo = await PackageInfo.fromPlatform();
+      final currentVersion = Version.parse(packageInfo.version);
 
-      // Ambil data rilis terbaru
-      final release = await apiService.getLatestGithubAPKRelease(
-        ownerGithub: 'limul-ert',
-        repositoryGithub: 'Ngopiyuk',
-        apkKeyName: '', // <-- Wajib ditambahkan
-        supportedAbis: supportedAbis,
+      // 2. Tembak API GitHub buat dapetin rilis terbaru
+      final response = await http.get(
+        Uri.parse('https://api.github.com/repos/limul-ert/Ngopiyuk/releases/latest'),
+        headers: {'User-Agent': 'NgopiYuk-App'},
       );
 
-      if (release != null) {
-        final currentVersion = await updater.getCurrentAppVersion();
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
 
-        final isNewer = VersionComparator().isNewerVersion(
-          release.version,
-          currentVersion,
-        );
+        // Ambil nama tag (misal: "v1.0.2"), lalu hapus huruf 'v'
+        final String latestVersionString = data['tag_name'].toString().replaceAll('v', '');
+        final latestVersion = Version.parse(latestVersionString);
 
-        if (isNewer && mounted) {
-          _showUpdateDialog(release); // Tipe data sekarang GithubAPKRelease
+        // 3. Bandingkan versi
+        if (latestVersion > currentVersion) {
+          // Cari link file APK di halaman rilis
+          String apkUrl = data['html_url']; // Fallback ke halaman rilis
+          if (data['assets'] != null && data['assets'].isNotEmpty) {
+            apkUrl = data['assets'][0]['browser_download_url'];
+          }
+
+          if (mounted) _showUpdateDialog(latestVersionString, apkUrl);
         }
       }
     } catch (e) {
-      debugPrint('Cek update gagal (atau belum ada rilis): $e');
+      debugPrint('Gagal cek update: $e');
     }
   }
 
-  void _showUpdateDialog(GithubAPKRelease release) {
+  void _showUpdateDialog(String newVersion, String downloadUrl) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -90,7 +94,7 @@ class HomePageState extends State<HomePage> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: Text(
-          'Versi terbaru (${release.version}) sudah tersedia.\nYuk update sekarang untuk pengalaman yang lebih baik!',
+          'Versi terbaru (v$newVersion) sudah tersedia.\nSilakan download versi barunya sekarang.',
           style: const TextStyle(color: Colors.grey),
         ),
         actions: [
@@ -101,27 +105,17 @@ class HomePageState extends State<HomePage> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              // Proses Download & Install
-              final downloader = ApkDownloaderService();
-              final updater = GithubReleaseApkUpdater();
-
-              final filePath = await downloader.downloadAPK(
-                release.apkUrl,
-                null, // token (biarkan null kalau repo public)
-                    (received, total) {
-                  // Bisa tambahkan progress bar di sini kalau mau
-                },
-              );
-
-              if (filePath != null) {
-                await updater.installApk(filePath);
+              // Buka browser untuk download APK
+              final url = Uri.parse(downloadUrl);
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
               }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryColor,
               foregroundColor: Colors.black,
             ),
-            child: const Text('Update Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('Download APK', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

@@ -16,8 +16,9 @@ dependencies:
   provider: ^6.1.2
   intl: ^0.19.0
 
-  # Package untuk fitur Auto-Update dari GitHub
-  github_release_apk_updater: ^1.0.11
+  # Package untuk fitur Auto-Update dari GitHub (Cara Baru)
+  http: ^1.1.0
+  package_info_plus: ^8.0.0
   version: ^3.0.0
 
 dev_dependencies:
