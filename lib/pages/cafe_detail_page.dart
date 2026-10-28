@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart'; // IMPORT SHARE PLUS
+import 'package:share_plus/share_plus.dart';
 import '../models/cafe.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/cafe_image.dart';
@@ -182,25 +182,30 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
               onPressed: () => Navigator.pop(context),
             ),
             actions: [
-              // ===== ICON SHARE (UDAH DIPERBAIKI) =====
-              IconButton(
-                icon: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.share,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                onPressed: () {
-                  SharePlus.instance.share(
-                    ShareParams(
-                      text: 'Yuk ngopi di ${cafe.name}! ☕\n\nLokasi: ${cafe.address}\n\nTemukan cafe terbaik di Madiun lewat aplikasi NgopiYuk!',
+              // ===== ICON SHARE (VERSI SHARE_PLUS 10) =====
+              Builder(
+                builder: (BuildContext context) {
+                  final RenderBox? box = context.findRenderObject() as RenderBox?;
+                  return IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.share,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
+                    onPressed: () {
+                      Share.share(
+                        'Yuk ngopi di ${cafe.name}! ☕\n\nLokasi: ${cafe.address}\n\nTemukan cafe terbaik di Madiun lewat aplikasi NgopiYuk!',
+                        subject: 'NgopiYuk - ${cafe.name}',
+                        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+                      );
+                    },
                   );
                 },
               ),
