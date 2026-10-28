@@ -13,6 +13,10 @@ import 'favorites_page.dart';
 import 'search_page.dart';
 import 'cafe_list_page.dart';
 
+// Import untuk fitur Auto-Update
+import 'package:github_release_apk_updater/github_release_apk_updater.dart';
+import 'package:version/version.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -36,7 +40,81 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadUserData();
+    _checkForUpdate(); // ← Panggil fungsi cek update pas aplikasi dibuka
   }
+
+  // ============================================
+  // FITUR AUTO UPDATE DARI GITHUB
+  // ============================================
+  Future<void> _checkForUpdate() async {
+    final updater = GithubReleaseApkUpdater();
+    final apiService = GithubApiService();
+
+    try {
+      final supportedAbis = await updater.getSupportedAbis();
+
+      // Ambil data rilis terbaru dari GitHub (Pastikan username & repo sesuai)
+      final release = await apiService.getLatestGithubAPKRelease(
+        ownerGithub: 'limul-ert',       // Username GitHub kamu
+        repositoryGithub: 'Ngopiyuk',   // Nama Repository kamu
+        supportedAbis: supportedAbis,
+      );
+
+      if (release != null) {
+        final currentVersion = await updater.getCurrentAppVersion();
+
+        // Bandingkan versi di GitHub vs versi di HP
+        final isNewer = VersionComparator().isNewerVersion(
+          release.version,
+          currentVersion,
+        );
+
+        if (isNewer && mounted) {
+          _showUpdateDialog(release);
+        }
+      }
+    } catch (e) {
+      debugPrint('Cek update gagal (atau belum ada rilis): $e');
+    }
+  }
+
+  void _showUpdateDialog(GithubRelease release) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Update Tersedia! 🚀',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Versi terbaru (${release.version}) sudah tersedia.\nYuk update sekarang untuk pengalaman yang lebih baik!',
+          style: const TextStyle(color: Colors.grey),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Nanti', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              final downloader = ApkDownloaderService();
+              downloader.downloadApkAndInstall(release);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('Update Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+  // ============================================
 
   Future<void> reloadUserData() async {
     await _loadUserData();
@@ -110,15 +188,15 @@ class HomePageState extends State<HomePage> {
 
   bool _isFavorite(String cafeName) => _favoriteCafeNames.contains(cafeName);
 
-    void _toggleFavorite(String cafeName) {
-      setState(() {
-        if (_favoriteCafeNames.contains(cafeName)) {
-          _favoriteCafeNames.remove(cafeName);
-        } else {
-          _favoriteCafeNames.add(cafeName);
-        }
-      });
-    }
+  void _toggleFavorite(String cafeName) {
+    setState(() {
+      if (_favoriteCafeNames.contains(cafeName)) {
+        _favoriteCafeNames.remove(cafeName);
+      } else {
+        _favoriteCafeNames.add(cafeName);
+      }
+    });
+  }
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).clearSnackBars();
@@ -203,16 +281,14 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Hitung tinggi navbar (72px height + 16px bottom padding + safe area)
     final bottomPadding = MediaQuery.of(context).padding.bottom + 130;
 
     return Scaffold(
       backgroundColor: bgColor,
       drawer: _buildDrawer(),
       body: SafeArea(
-        bottom: false, // ← ✅ biar scroll bisa tembus ke bawah
+        bottom: false,
         child: SingleChildScrollView(
-          // ← ✅ padding bottom biar nggak ketutupan navbar
           padding: EdgeInsets.only(bottom: bottomPadding.toDouble()),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
