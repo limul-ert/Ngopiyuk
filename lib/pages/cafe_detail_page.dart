@@ -469,12 +469,14 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final menu = menus[index];
+                    final int dynamicPrice = (18000 + ((menu['title']?.length ?? 5) * 1200) % 25000).toInt();
+                  
                       final menuItem = MenuItem(
-                        name: menu['title'] ?? 'Menu Kopi',
-                        price: 25000, // Harga default
-                        imageUrl: menu['image'] ?? '',
-                        category: 'Minuman',
-                      );
+                      name: menu['title'] ?? 'Menu Kopi',
+                      price: dynamicPrice, 
+                      imageUrl: menu['image'] ?? '',
+                      category: 'Minuman',
+                     );  
                       return _menuCard(menuItem);
                     },
                     childCount: menus.length,
