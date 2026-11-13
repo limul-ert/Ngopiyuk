@@ -155,7 +155,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
     final cafe = widget.cafe;
     final categories = _availableCategories;
 
-    // Kategori aktif berdasarkan tab yang dipilih user
     final String activeCategory = categories.isNotEmpty 
         ? categories[_selectedTabIndex] 
         : 'Minuman';
@@ -181,7 +180,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
               onPressed: () => Navigator.pop(context),
             ),
             actions: [
-              // ===== ICON SHARE =====
               Builder(
                 builder: (BuildContext context) {
                   final RenderBox? box = context.findRenderObject() as RenderBox?;
@@ -208,7 +206,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                   );
                 },
               ),
-              // ===== ICON CART =====
               Consumer<CartProvider>(
                 builder: (context, cart, _) {
                   return Stack(
@@ -257,7 +254,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                   );
                 },
               ),
-              // ===== ICON FAVORIT =====
               IconButton(
                 icon: Container(
                   padding: const EdgeInsets.all(6),
@@ -431,7 +427,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
             ),
           ),
 
-          // ===== INTEGRASI SPOONACULAR API UNTUK DAFTAR MENU DINAMIS =====
           FutureBuilder<List<dynamic>>(
             future: SpoonacularService.fetchMenuByCategory(activeCategory),
             builder: (context, snapshot) {
@@ -477,7 +472,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                       final int dynamicPrice = (18000 + ((menu['title']?.length ?? 5) * 1200) % 25000).toInt();
                   
                       final menuItem = MenuItem(
-                        name: menu['title'] ?? 'Menu Kopi',
+                        name: menu['title'] ?? 'Menu Pilihan',
                         price: dynamicPrice, 
                         imageUrl: menu['image'] ?? '',
                         category: activeCategory,
@@ -768,11 +763,27 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
           ),
           child: Row(
             children: [
-              CafeImage(
-                source: item.imageUrl,
-                width: 80,
-                height: 80,
+              ClipRRect(
                 borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: item.imageUrl.isNotEmpty
+                      ? Image.network(
+                          item.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: cardColor,
+                              child: const Icon(Icons.local_cafe, color: primaryColor, size: 32),
+                            );
+                          },
+                        )
+                      : Container(
+                          color: cardColor,
+                          child: const Icon(Icons.local_cafe, color: primaryColor, size: 32),
+                        ),
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
