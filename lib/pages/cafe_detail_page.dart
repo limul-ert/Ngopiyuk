@@ -5,10 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../models/cafe.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/cafe_image.dart';
-<<<<<<< HEAD
 import '../services/spoonacular_service.dart'; // Ditambahkan import service Spoonacular
-=======
->>>>>>> ad2aff18e994e60f77333816994e2e695aff482e
 import 'cart_page.dart';
 import 'chat_page.dart';
 
@@ -64,16 +61,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
     }).toList();
   }
 
-<<<<<<< HEAD
-=======
-  List<MenuItem> get _currentMenu {
-    final categories = _availableCategories;
-    if (_selectedTabIndex >= categories.length) return [];
-    final cat = categories[_selectedTabIndex];
-    return widget.cafe.menu.where((m) => m.category == cat).toList();
-  }
-
->>>>>>> ad2aff18e994e60f77333816994e2e695aff482e
   void _toggleFavorite() {
     setState(() => _isFavorite = !_isFavorite);
     widget.onToggleFavorite();
@@ -189,11 +176,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
               onPressed: () => Navigator.pop(context),
             ),
             actions: [
-<<<<<<< HEAD
               // ===== ICON SHARE =====
-=======
-              // ===== ICON SHARE (VERSI SHARE_PLUS 10) =====
->>>>>>> ad2aff18e994e60f77333816994e2e695aff482e
               Builder(
                 builder: (BuildContext context) {
                   final RenderBox? box = context.findRenderObject() as RenderBox?;
@@ -443,7 +426,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
             ),
           ),
 
-<<<<<<< HEAD
           // ===== INTEGRASI SPOONACULAR API UNTUK DAFTAR MENU =====
           FutureBuilder<List<dynamic>>(
             future: SpoonacularService.fetchCoffeeMenu(),
@@ -500,20 +482,6 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                 ),
               );
             },
-=======
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                  final menu = _currentMenu;
-                  if (index >= menu.length) return null;
-                  return _menuCard(menu[index]);
-                },
-                childCount: _currentMenu.length,
-              ),
-            ),
->>>>>>> ad2aff18e994e60f77333816994e2e695aff482e
           ),
         ],
       ),
@@ -938,11 +906,7 @@ class _TabPillsHeader extends SliverPersistentHeaderDelegate {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
-<<<<<<< HEAD
         separatorBuilder: (_, _) => const SizedBox(width: 10),
-=======
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
->>>>>>> ad2aff18e994e60f77333816994e2e695aff482e
         itemBuilder: (context, index) {
           final isActive = index == selectedIndex;
           final category = categories[index];
