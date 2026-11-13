@@ -768,21 +768,16 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                 child: SizedBox(
                   width: 80,
                   height: 80,
-                  child: item.imageUrl.isNotEmpty
-                      ? Image.network(
-                          item.imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: cardColor,
-                              child: const Icon(Icons.local_cafe, color: primaryColor, size: 32),
-                            );
-                          },
-                        )
-                      : Container(
-                          color: cardColor,
-                          child: const Icon(Icons.local_cafe, color: primaryColor, size: 32),
-                        ),
+                  child: Image.network(
+                    'https://picsum.photos/seed/${item.name.hashCode}/200/200',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: cardColor,
+                        child: const Icon(Icons.local_cafe, color: primaryColor, size: 32),
+                      );
+                    },
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
