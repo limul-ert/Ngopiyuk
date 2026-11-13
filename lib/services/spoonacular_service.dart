@@ -9,9 +9,9 @@ class SpoonacularService {
     
     // Sesuaikan kata kunci pencarian berdasarkan kategori aplikasi
     if (category == 'Makanan') {
-      searchQuery = 'bakery'; // atau 'main course'
+      searchQuery = 'pasta'; // atau 'main course'
     } else if (category == 'Snack') {
-      searchQuery = 'dessert'; // atau 'snack'
+      searchQuery = 'cookie'; // atau 'snack'
     }
 
     final url = Uri.parse('${ApiConfig.baseUrl}?query=$searchQuery&apiKey=${ApiConfig.apiKey}');
