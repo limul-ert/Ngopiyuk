@@ -3,8 +3,18 @@ import 'package:http/http.dart' as http;
 import 'api_config.dart';
 
 class SpoonacularService {
-  static Future<List<dynamic>> fetchCoffeeMenu() async {
-    final url = Uri.parse('${ApiConfig.baseUrl}?query=coffee&apiKey=${ApiConfig.apiKey}');
+  // Ubah agar menerima parameter query kategori
+  static Future<List<dynamic>> fetchMenuByCategory(String category) async {
+    String searchQuery = 'coffee'; // Default
+    
+    // Sesuaikan kata kunci pencarian berdasarkan kategori aplikasi
+    if (category == 'Makanan') {
+      searchQuery = 'bakery'; // atau 'main course'
+    } else if (category == 'Snack') {
+      searchQuery = 'dessert'; // atau 'snack'
+    }
+
+    final url = Uri.parse('${ApiConfig.baseUrl}?query=$searchQuery&apiKey=${ApiConfig.apiKey}');
 
     try {
       final response = await http.get(url);

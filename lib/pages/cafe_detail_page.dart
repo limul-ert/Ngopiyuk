@@ -5,7 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../models/cafe.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/cafe_image.dart';
-import '../services/spoonacular_service.dart'; // Ditambahkan import service Spoonacular
+import '../services/spoonacular_service.dart';
 import 'cart_page.dart';
 import 'chat_page.dart';
 
@@ -154,6 +154,11 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
   Widget build(BuildContext context) {
     final cafe = widget.cafe;
     final categories = _availableCategories;
+
+    // Kategori aktif berdasarkan tab yang dipilih user
+    final String activeCategory = categories.isNotEmpty 
+        ? categories[_selectedTabIndex] 
+        : 'Minuman';
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -426,9 +431,9 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
             ),
           ),
 
-          // ===== INTEGRASI SPOONACULAR API UNTUK DAFTAR MENU =====
+          // ===== INTEGRASI SPOONACULAR API UNTUK DAFTAR MENU DINAMIS =====
           FutureBuilder<List<dynamic>>(
-            future: SpoonacularService.fetchCoffeeMenu(),
+            future: SpoonacularService.fetchMenuByCategory(activeCategory),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SliverToBoxAdapter(
@@ -469,14 +474,14 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final menu = menus[index];
-                    final int dynamicPrice = (18000 + ((menu['title']?.length ?? 5) * 1200) % 25000).toInt();
+                      final int dynamicPrice = (18000 + ((menu['title']?.length ?? 5) * 1200) % 25000).toInt();
                   
                       final menuItem = MenuItem(
-                      name: menu['title'] ?? 'Menu Kopi',
-                      price: dynamicPrice, 
-                      imageUrl: menu['image'] ?? '',
-                      category: 'Minuman',
-                     );  
+                        name: menu['title'] ?? 'Menu Kopi',
+                        price: dynamicPrice, 
+                        imageUrl: menu['image'] ?? '',
+                        category: activeCategory,
+                      );  
                       return _menuCard(menuItem);
                     },
                     childCount: menus.length,
