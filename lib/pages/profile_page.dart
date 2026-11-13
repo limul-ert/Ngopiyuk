@@ -412,7 +412,11 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Switch(
               value: value,
               onChanged: onChanged,
+<<<<<<< HEAD
               activeThumbColor: Colors.white,
+=======
+              activeColor: Colors.white,
+>>>>>>> ad2aff18e994e60f77333816994e2e695aff482e
               activeTrackColor: toggleActiveColor,
               inactiveThumbColor: Colors.white,
               inactiveTrackColor: toggleInactiveTrack,

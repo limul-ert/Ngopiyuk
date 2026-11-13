@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+<<<<<<< HEAD
+=======
+import '../models/cart_item.dart';
+>>>>>>> ad2aff18e994e60f77333816994e2e695aff482e
 import '../providers/cart_provider.dart';
 import '../widgets/cafe_image.dart'; // ← ✅ TAMBAH
 import 'checkout_page.dart';

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import '../models/cafe.dart';
 import '../widgets/cafe_card.dart';
 import 'cafe_detail_page.dart';
+<<<<<<< HEAD
 import '../services/spoonacular_service.dart';
+=======
+>>>>>>> ad2aff18e994e60f77333816994e2e695aff482e
 
 class CafeListPage extends StatefulWidget {
   final String title;

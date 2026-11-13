@@ -380,7 +380,11 @@ class _ChatPageState extends State<ChatPage> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         itemCount: _quickReplies.length,
+<<<<<<< HEAD
         separatorBuilder: (_, _) => const SizedBox(width: 8),
+=======
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+>>>>>>> ad2aff18e994e60f77333816994e2e695aff482e
         itemBuilder: (context, index) {
           final item = _quickReplies[index];
           return GestureDetector(
