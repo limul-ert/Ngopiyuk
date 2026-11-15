@@ -21,7 +21,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   bool _pauseNotifications = true;
 
-  static const Color bgColor = Color(0xFF0F0F0F); // ← ✅ SAMAKAN
+  static const Color bgColor = Color(0xFF0F0F0F);
   static const Color cardColor = Color(0xFF181818);
   static const Color dividerColor = Color(0xFF252525);
   static const Color toggleActiveColor = Color(0xFFC7F464);
@@ -102,14 +102,19 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           ElevatedButton(
             onPressed: () async {
+              // PERBAIKAN: Tutup dialog terlebih dahulu sebelum proses async
+              Navigator.pop(dialogContext);
+              
               final prefs = await SharedPreferences.getInstance();
               await prefs.setBool('is_logged_in', false);
+              
+              // PERBAIKAN: Cek mounted sebelum menggunakan context state untuk navigasi
               if (!mounted) return;
-              Navigator.pop(dialogContext);
+              
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginPage()),
-                    (route) => false,
+                (route) => false,
               );
             },
             style: ElevatedButton.styleFrom(
@@ -138,7 +143,7 @@ class _ProfilePageState extends State<ProfilePage> {
             _buildHeader(canPop),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 120), // ← ✅ padding bottom
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
                 child: Column(
                   children: [
                     _buildProfileCard(),
@@ -371,8 +376,8 @@ class _ProfilePageState extends State<ProfilePage> {
           for (int i = 0; i < children.length; i++) ...[
             children[i],
             if (i < children.length - 1)
-              Padding(
-                padding: const EdgeInsets.only(left: 48),
+              const Padding(
+                padding: EdgeInsets.only(left: 48),
                 child: Divider(
                   color: dividerColor,
                   height: 1,

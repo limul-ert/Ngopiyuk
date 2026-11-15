@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 class _Colors {
   static const bgColor = Color(0xFF0A0A0A);
   static const cardColor = Color(0xFF181818);
-  static const dividerColor = Color(0xFF252525);
   static const limeColor = Color(0xFFC7F464);
   static const textPrimary = Colors.white;
   static const textSecondary = Colors.grey;

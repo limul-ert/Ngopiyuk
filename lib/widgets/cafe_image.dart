@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 /// - Built-in loading indicator
 /// - Built-in error fallback (icon cafe)
 /// - Support `borderRadius`
+/// - Gambar network di web dimuat lewat elemen <img> (tanpa masalah CORS)
 class CafeImage extends StatelessWidget {
   final String source;
   final double? width;
@@ -75,6 +76,10 @@ class CafeImage extends StatelessWidget {
       return Image.network(
         source,
         fit: fit,
+        // ✅ PERBAIKAN: di Flutter web, muat gambar lewat elemen <img> HTML
+        // supaya tidak diblokir CORS (contoh: gambar dari img.spoonacular.com).
+        // Parameter ini diabaikan di Android/iOS/desktop.
+        webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
         loadingBuilder: (context, child, progress) {
           if (progress == null) return child;
           return _buildLoading();

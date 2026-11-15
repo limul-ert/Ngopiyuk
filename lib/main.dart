@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+// Pastikan path import di bawah ini sesuai dengan struktur folder Anda
 import 'providers/cart_provider.dart';
 import 'providers/chat_provider.dart';
 import 'pages/login_page.dart';
 
 void main() {
+  // Menjalankan aplikasi
   runApp(const NgopiYukApp());
 }
 
@@ -16,6 +19,7 @@ class NgopiYukApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
+          // Memanggil loadCart() saat CartProvider pertama kali dibuat
           create: (_) => CartProvider()..loadCart(),
         ),
         ChangeNotifierProvider(
