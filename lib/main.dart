@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart'; // <-- IMPORT GOOGLE FONTS
 
 // Pastikan path import di bawah ini sesuai dengan struktur folder Anda
 import 'providers/cart_provider.dart';
@@ -37,6 +38,10 @@ class NgopiYukApp extends StatelessWidget {
             brightness: Brightness.dark,
           ),
           useMaterial3: true,
+          
+          // ===== IMPLEMENTASI PACKAGE GEMS: GOOGLE FONTS =====
+          // Menggunakan font Poppins untuk seluruh teks di aplikasi
+          fontFamily: GoogleFonts.poppins().fontFamily,
         ),
         home: const LoginPage(),
       ),

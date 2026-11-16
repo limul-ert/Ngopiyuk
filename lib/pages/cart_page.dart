@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_slidable/flutter_slidable.dart'; // IMPORT PACKAGE BARU
 import '../providers/cart_provider.dart';
-import '../widgets/cafe_image.dart'; // ← ✅ TAMBAH
+import '../widgets/cafe_image.dart';
 import 'checkout_page.dart';
 
 class CartPage extends StatelessWidget {
@@ -22,12 +23,17 @@ class CartPage extends StatelessWidget {
           builder: (context, cart, _) {
             return Column(
               children: [
+                // ===== HEADER =====
                 _buildHeader(context, cart),
+
+                // ===== EMPTY STATE / LIST =====
                 Expanded(
                   child: cart.items.isEmpty
                       ? _buildEmptyState(context)
                       : _buildCartList(context, cart),
                 ),
+
+                // ===== BOTTOM SUMMARY =====
                 if (cart.items.isNotEmpty)
                   _buildBottomSummary(context, cart),
               ],
@@ -38,6 +44,9 @@ class CartPage extends StatelessWidget {
     );
   }
 
+  // ============================================
+  // HEADER
+  // ============================================
   Widget _buildHeader(BuildContext context, CartProvider cart) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
@@ -86,7 +95,7 @@ class CartPage extends StatelessWidget {
                   ),
                 ),
                 child: const Icon(
-                  Icons.delete_outline,
+                  Icons.delete_sweep_outlined, // Icon ganti jadi sapu
                   color: deleteColor,
                   size: 20,
                 ),
@@ -99,6 +108,9 @@ class CartPage extends StatelessWidget {
     );
   }
 
+  // ============================================
+  // EMPTY STATE
+  // ============================================
   Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Padding(
@@ -148,6 +160,9 @@ class CartPage extends StatelessWidget {
     );
   }
 
+  // ============================================
+  // CART LIST
+  // ============================================
   Widget _buildCartList(BuildContext context, CartProvider cart) {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
@@ -159,133 +174,139 @@ class CartPage extends StatelessWidget {
   }
 
   Widget _buildCartItem(
-      BuildContext context,
-      CartProvider cart,
-      int index,
-      ) {
+    BuildContext context,
+    CartProvider cart,
+    int index,
+  ) {
     final item = cart.items[index];
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: warmCardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: primaryColor.withValues(alpha: 0.12),
-          width: 1,
+    // ===== IMPLEMENTASI FLUTTER SLIDABLE =====
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Slidable(
+        key: ValueKey(item.item.name),
+        endActionPane: ActionPane(
+          motion: const DrawerMotion(), // Animasi laci yang elegan
+          extentRatio: 0.25, // Lebar tombol hapus (25% dari layar)
+          children: [
+            SlidableAction(
+              onPressed: (context) => _confirmRemoveItem(
+                context,
+                cart,
+                index,
+                item.item.name,
+              ),
+              backgroundColor: deleteColor,
+              foregroundColor: Colors.white,
+              icon: Icons.delete_outline,
+              label: 'Hapus',
+              borderRadius: BorderRadius.circular(16), // Sudut melengkung
+            ),
+          ],
         ),
-      ),
-      child: Row(
-        children: [
-          // ← ✅ GANTI Image.network → CafeImage
-          CafeImage(
-            source: item.item.imageUrl,
-            width: 80,
-            height: 80,
-            borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: warmCardColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: primaryColor.withValues(alpha: 0.12),
+              width: 1,
+            ),
           ),
-          const SizedBox(width: 12),
+          child: Row(
+            children: [
+              // ===== GAMBAR =====
+              CafeImage(
+                source: item.item.imageUrl,
+                width: 80,
+                height: 80,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              const SizedBox(width: 12),
 
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  item.item.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  item.cafeName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.grey.withValues(alpha: 0.7),
-                    fontSize: 11,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Rp ${item.item.price.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
-                  style: const TextStyle(
-                    color: primaryColor,
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
+              // ===== INFO =====
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: bgColor,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _quantityButton(
-                            icon: Icons.remove,
-                            onTap: () => cart.decrement(index),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Text(
-                              '${item.quantity}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          _quantityButton(
-                            icon: Icons.add,
-                            onTap: () => cart.increment(index),
-                          ),
-                        ],
+                    Text(
+                      item.item.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        height: 1.3,
                       ),
                     ),
-                    const Spacer(),
-                    GestureDetector(
-                      onTap: () => _confirmRemoveItem(
-                        context,
-                        cart,
-                        index,
-                        item.item.name,
+                    const SizedBox(height: 4),
+                    Text(
+                      item.cafeName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.grey.withValues(alpha: 0.7),
+                        fontSize: 11,
                       ),
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: deleteColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.delete_outline,
-                          color: deleteColor,
-                          size: 16,
-                        ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Rp ${item.item.price.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
+                      style: const TextStyle(
+                        color: primaryColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
                       ),
+                    ),
+                    const SizedBox(height: 10),
+                    
+                    // Tombol Hapus (Trash Can) udah dihilangkan dari sini
+                    Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: bgColor,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.1),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _quantityButton(
+                                icon: Icons.remove,
+                                onTap: () => cart.decrement(index),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                child: Text(
+                                  '${item.quantity}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              _quantityButton(
+                                icon: Icons.add,
+                                onTap: () => cart.increment(index),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -309,6 +330,9 @@ class CartPage extends StatelessWidget {
     );
   }
 
+  // ============================================
+  // BOTTOM SUMMARY
+  // ============================================
   Widget _buildBottomSummary(BuildContext context, CartProvider cart) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
@@ -425,6 +449,9 @@ class CartPage extends StatelessWidget {
     );
   }
 
+  // ============================================
+  // DIALOG: HAPUS SEMUA
+  // ============================================
   void _confirmClearCart(BuildContext context, CartProvider cart) {
     showDialog(
       context: context,
@@ -478,12 +505,15 @@ class CartPage extends StatelessWidget {
     );
   }
 
+  // ============================================
+  // DIALOG: HAPUS 1 ITEM
+  // ============================================
   void _confirmRemoveItem(
-      BuildContext context,
-      CartProvider cart,
-      int index,
-      String itemName,
-      ) {
+    BuildContext context,
+    CartProvider cart,
+    int index,
+    String itemName,
+  ) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
