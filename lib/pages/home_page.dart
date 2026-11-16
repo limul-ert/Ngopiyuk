@@ -17,7 +17,6 @@ import 'cafe_detail_page.dart';
 import 'favorites_page.dart';
 import 'search_page.dart';
 import 'cafe_list_page.dart';
-import 'recipe_list_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -252,13 +251,6 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  void _openRecipes() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const RecipeListPage()),
-    );
-  }
-
   void _openTopRatedPage() {
     Navigator.push(
       context,
@@ -308,8 +300,6 @@ class HomePageState extends State<HomePage> {
               StaggeredEntrance(index: 0, child: _buildHeader()),
               const SizedBox(height: 16),
               StaggeredEntrance(index: 1, child: PromoCarousel(promos: dummyPromos)),
-              const SizedBox(height: 16),
-              _buildRecipeBanner(),
               const SizedBox(height: 24),
               StaggeredEntrance(
                 index: 2,
@@ -462,63 +452,6 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  // ============================================
-  // BANNER RESEP KOPI (data dari Spoonacular API via Dio)
-  // ============================================
-  Widget _buildRecipeBanner() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: PressableCard(
-        child: GestureDetector(
-          onTap: _openRecipes,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: primaryColor.withValues(alpha: 0.4)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: primaryColor.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.menu_book, color: primaryColor),
-                ),
-                const SizedBox(width: 14),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Resep Kopi',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Cari resep lengkap dengan gambar & detail',
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right, color: primaryColor),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildSectionTitle(String title, {VoidCallback? onViewAll}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -607,14 +540,6 @@ class HomePageState extends State<HomePage> {
             onTap: () {
               Navigator.pop(context);
               _openFavorites();
-            },
-          ),
-          _buildDrawerItem(
-            Icons.menu_book,
-            'Resep Kopi',
-            onTap: () {
-              Navigator.pop(context);
-              _openRecipes();
             },
           ),
         ],

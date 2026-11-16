@@ -765,19 +765,11 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
+                child: CafeImage(
+                  source: item.imageUrl, // gambar dari Spoonacular API
                   width: 80,
                   height: 80,
-                  child: Image.network(
-                    'https://picsum.photos/seed/${item.name.hashCode}/200/200',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: cardColor,
-                        child: const Icon(Icons.local_cafe, color: primaryColor, size: 32),
-                      );
-                    },
-                  ),
+                  fallbackIcon: _getCategoryIcon(item.category),
                 ),
               ),
               const SizedBox(width: 14),

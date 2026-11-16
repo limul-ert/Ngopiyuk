@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 class OsmService {
   static const String _baseUrl = 'https://overpass-api.de/api/interpreter';
@@ -27,7 +28,7 @@ class OsmService {
         throw Exception('Gagal memuat data kafe: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching cafes: $e');
+      debugPrint('Error fetching cafes: $e');
       return [];
     }
   }
