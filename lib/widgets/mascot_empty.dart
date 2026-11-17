@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 // ============================================
 // MASKOT EMPTY STATE — statis, tanpa animasi
