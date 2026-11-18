@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../models/cafe.dart';
 import '../providers/cart_provider.dart';
 import '../pages/cart_page.dart';
@@ -127,23 +128,24 @@ class _PromoCarouselState extends State<PromoCarousel> {
           ),
         ),
         const SizedBox(height: 12),
-        // ===== PAGE INDICATOR =====
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            widget.promos.length,
-                (i) => AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.symmetric(horizontal: 3),
-              width: _currentPage == i ? 20 : 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: _currentPage == i
-                    ? primaryColor
-                    : Colors.white.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
+        // ===== PAGE INDICATOR (Smooth Morphing Pill) =====
+        SmoothPageIndicator(
+          controller: _controller,
+          count: widget.promos.length,
+          onDotClicked: (index) {
+            _controller.animateToPage(
+              index,
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeInOut,
+            );
+          },
+          effect: ExpandingDotsEffect(
+            dotHeight: 8,
+            dotWidth: 8,
+            expansionFactor: 2.5,
+            spacing: 6,
+            activeDotColor: primaryColor,
+            dotColor: Colors.white.withValues(alpha: 0.3),
           ),
         ),
       ],
