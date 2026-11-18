@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
+import 'package:flutter_animate/flutter_animate.dart'; // Package animasi Orang 5
 
 import '../data/dummy_cafes.dart';
 import '../models/cafe.dart';
@@ -28,7 +29,7 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   String _selectedCategory = 'All';
   String _userName = 'User';
-  String _userAvatar = '😀';
+  String _userAvatar = '😎';
   Uint8List? _avatarImageBytes;
 
   final Set<String> _favoriteCafeNames = {};
@@ -170,7 +171,7 @@ class HomePageState extends State<HomePage> {
 
     setState(() {
       _userName = prefs.getString('user_name') ?? 'User';
-      _userAvatar = prefs.getString('user_avatar') ?? '😀';
+      _userAvatar = prefs.getString('user_avatar') ?? '😎';
       _avatarImageBytes = bytes;
     });
   }
@@ -297,14 +298,19 @@ class HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              StaggeredEntrance(index: 0, child: _buildHeader()),
+              _buildHeader()
+                  .animate()
+                  .fadeIn(duration: 500.ms)
+                  .slideY(begin: -0.2, end: 0, duration: 500.ms),
               const SizedBox(height: 16),
-              StaggeredEntrance(index: 1, child: PromoCarousel(promos: dummyPromos)),
+              PromoCarousel(promos: dummyPromos)
+                  .animate()
+                  .fadeIn(delay: 150.ms, duration: 500.ms)
+                  .slideY(begin: 0.2, end: 0, delay: 150.ms),
               const SizedBox(height: 24),
-              StaggeredEntrance(
-                index: 2,
-                child: _buildSectionTitle('Rating Tertinggi', onViewAll: _openTopRatedPage),
-              ),
+              _buildSectionTitle('Rating Tertinggi', onViewAll: _openTopRatedPage)
+                  .animate()
+                  .fadeIn(delay: 250.ms, duration: 500.ms),
               const SizedBox(height: 12),
               SizedBox(
                 height: 200,
@@ -314,35 +320,37 @@ class HomePageState extends State<HomePage> {
                   itemCount: _topRatedCafes.length,
                   itemBuilder: (context, index) {
                     final cafe = _topRatedCafes[index];
-                    return StaggeredEntrance(
-                      index: 3 + index,
-                      child: PressableCard(
-                        child: CafeCardHorizontal(cafe: cafe, onTap: () => _onCafeTap(cafe)),
-                      ),
+                    return PressableCard(
+                      child: CafeCardHorizontal(cafe: cafe, onTap: () => _onCafeTap(cafe)),
                     );
                   },
                 ),
-              ),
+              )
+                  .animate()
+                  .fadeIn(delay: 350.ms, duration: 500.ms)
+                  .slideX(begin: 0.2, end: 0, delay: 350.ms),
               const SizedBox(height: 24),
-              StaggeredEntrance(index: 8, child: _buildSectionTitle('Kategori')),
+              _buildSectionTitle('Kategori')
+                  .animate()
+                  .fadeIn(delay: 450.ms, duration: 500.ms),
               const SizedBox(height: 12),
-              StaggeredEntrance(
-                index: 9,
-                child: CategoryRow(
-                  categories: dummyCategories,
-                  selectedCategory: _selectedCategory,
-                  onCategorySelected: (cat) {
-                    setState(() => _selectedCategory = cat);
-                  },
-                ),
-              ),
+              CategoryRow(
+                categories: dummyCategories,
+                selectedCategory: _selectedCategory,
+                onCategorySelected: (cat) {
+                  setState(() => _selectedCategory = cat);
+                },
+              )
+                  .animate()
+                  .fadeIn(delay: 550.ms, duration: 500.ms),
               const SizedBox(height: 24),
-              StaggeredEntrance(
-                index: 10,
-                child: _buildSectionTitle('Semua Cafe', onViewAll: _openAllCafesPage),
-              ),
+              _buildSectionTitle('Semua Cafe', onViewAll: _openAllCafesPage)
+                  .animate()
+                  .fadeIn(delay: 650.ms, duration: 500.ms),
               const SizedBox(height: 12),
-              _buildCafeList(),
+              _buildCafeList()
+                  .animate()
+                  .fadeIn(delay: 750.ms, duration: 500.ms),
               const SizedBox(height: 24),
             ],
           ),
@@ -495,11 +503,8 @@ class HomePageState extends State<HomePage> {
       child: Column(
         children: [
           for (int i = 0; i < cafes.length; i++)
-            StaggeredEntrance(
-              index: 11 + i,
-              child: PressableCard(
-                child: CafeCardVertical(cafe: cafes[i], onTap: () => _onCafeTap(cafes[i])),
-              ),
+            PressableCard(
+              child: CafeCardVertical(cafe: cafes[i], onTap: () => _onCafeTap(cafes[i])),
             ),
         ],
       ),
