@@ -29,12 +29,9 @@ dependencies:
   cached_network_image: ^3.4.1
   shimmer: ^3.0.0
 
-<<<<<<< HEAD
   flutter_animate: ^4.5.0
-
-=======
   material_ui: ^0.0.1
->>>>>>> c4910e8e96c10655f2a96145eb05b50bd6211135
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
