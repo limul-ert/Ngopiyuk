@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 // ============================================
 // COLOR PALETTE
@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 class _Colors {
   static const bgColor = Color(0xFF0A0A0A);
   static const cardColor = Color(0xFF181818);
-  static const dividerColor = Color(0xFF252525);
-  static const limeColor = Color(0xFFC7F464);
+  static const limeColor = Color(0xFFC7F464); // Bisa diganti 0xFFC8956D jika mau warna coklat
   static const textPrimary = Colors.white;
   static const textSecondary = Colors.grey;
 }
@@ -285,7 +284,7 @@ class ContactPage extends StatelessWidget {
 }
 
 // ============================================
-// 2. HALAMAN TENTANG APLIKASI
+// 2. HALAMAN TENTANG KAMI (ABOUT US)
 // ============================================
 class AboutAppPage extends StatelessWidget {
   const AboutAppPage({super.key});
@@ -297,7 +296,7 @@ class AboutAppPage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const _InfoHeader(title: 'Tentang Aplikasi'),
+            const _InfoHeader(title: 'Tentang Kami'), 
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -324,8 +323,7 @@ class AboutAppPage extends StatelessWidget {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: _Colors.limeColor
-                                      .withValues(alpha: 0.3),
+                                  color: _Colors.limeColor.withValues(alpha: 0.3),
                                   blurRadius: 20,
                                   spreadRadius: 2,
                                 ),
@@ -378,34 +376,68 @@ class AboutAppPage extends StatelessWidget {
                       icon: Icons.description_outlined,
                       title: 'Deskripsi',
                       content:
-                      'NgopiYuk adalah aplikasi discovery cafe terbaik di Madiun. '
+                          'NgopiYuk adalah aplikasi discovery cafe terbaik di Madiun. '
                           'Temukan cafe favoritmu berdasarkan kategori, rating, '
                           'dan jam operasional. Lihat menu, buka lokasi lewat Google '
                           'Maps, dan simpan cafe favoritmu untuk dikunjungi nanti.',
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
 
-                    // Features
-                    _buildSection(
-                      icon: Icons.star_outline,
-                      title: 'Fitur Utama',
-                      content:
-                      '• Jelajah cafe dengan kategori (Alam, Estetik, Murah, 24 Jam)\n'
-                          '• Rating tertinggi dari pengguna\n'
-                          '• Pencarian real-time\n'
-                          '• Simpan cafe favorit\n'
-                          '• Buka lokasi di Google Maps\n'
-                          '• Panggil cafe langsung dari aplikasi',
+                    // ===== SECTION TIM PENGEMBANG =====
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Tim Pengembang',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 12),
+                    
+                    // DAFTAR ANGGOTA KELOMPOK
+                    _buildMemberCard(
+                      name: 'Maulana Halim', 
+                      nim: 'NIM. 25051204386', 
+                      role: 'Google Fonts',
+                      imagePath: 'assets/images/members/anggota 1.jpeg',
+                    ),
+                    _buildMemberCard(
+                      name: 'Wahyu Septiya Ardana',
+                      nim: 'NIM. 25051204418',
+                      role: 'Smooth Indicator',
+                      imagePath: 'assets/images/members/anggota 2.jpeg',
+                    ),
+                    _buildMemberCard(
+                      name: 'Purnama Riyan Suprapto',
+                      nim: 'NIM. 25051204436',
+                      role: 'Cached Network Image',
+                      imagePath: 'assets/images/members/anggota 3.jpeg',
+                    ),
+                    _buildMemberCard(
+                      name: 'Rendy Nur Jamal Prasetyo',
+                      nim: 'NIM. 25051204418', // Cek lagi NIM-nya jika sama dengan Wahyu
+                      role: 'Shimmer Loading',
+                      imagePath: 'assets/images/members/anggota 4.jpeg',
+                    ),
+                    _buildMemberCard(
+                      name: 'Reivandani Aji Prakoso',
+                      nim: 'NIM. 25051204422',
+                      role: 'Flutter Animate',
+                      imagePath: 'assets/images/members/anggota 5 .jpeg',
+                    ),
+
+                    const SizedBox(height: 16),
 
                     // Developer
                     _buildSection(
                       icon: Icons.code,
                       title: 'Developer',
                       content:
-                      'Dibuat dengan Flutter & Dart\n'
-                          'Oleh: Maulana Halim\n'
+                          'Dibuat dengan Flutter & Dart\n'
+                          'Oleh: Tim NgopiYuk\n'
                           'Program Studi Teknik Informatika\n'
                           'Universitas Negeri Surabaya',
                     ),
@@ -431,7 +463,7 @@ class AboutAppPage extends StatelessWidget {
                           ),
                           SizedBox(width: 6),
                           Text(
-                            '2025 NgopiYuk. All rights reserved.',
+                            '2026 NgopiYuk Team. All rights reserved.',
                             style: TextStyle(
                               color: _Colors.textSecondary,
                               fontSize: 12,
@@ -446,6 +478,98 @@ class AboutAppPage extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ===== WIDGET KARTU ANGGOTA =====
+  Widget _buildMemberCard({
+    required String name,
+    required String nim,
+    required String role,
+    String? imagePath,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _Colors.cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.04),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Foto Profil (Bulat)
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: _Colors.bgColor,
+              shape: BoxShape.circle,
+              border: Border.all(color: _Colors.limeColor, width: 1.5),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: imagePath != null
+                ? Image.asset(
+                    imagePath,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.person,
+                      color: _Colors.limeColor,
+                      size: 30,
+                    ),
+                  )
+                : const Icon(
+                    Icons.person,
+                    color: _Colors.limeColor,
+                    size: 30,
+                  ),
+          ),
+          const SizedBox(width: 14),
+          
+          // Info Teks
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    color: _Colors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  nim,
+                  style: const TextStyle(
+                    color: _Colors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: _Colors.limeColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    role,
+                    style: const TextStyle(
+                      color: _Colors.limeColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -506,7 +630,7 @@ class AboutAppPage extends StatelessWidget {
 }
 
 // ============================================
-// 3. HALAMAN SYARAT & KETENTUAN
+// 3. HALAMAN SYARAT & KETENTUAN (TIDAK DIUBAH)
 // ============================================
 class TermsPage extends StatelessWidget {
   const TermsPage({super.key});
@@ -669,7 +793,7 @@ class TermsPage extends StatelessWidget {
 }
 
 // ============================================
-// 4. HALAMAN KEBIJAKAN PRIVASI
+// 4. HALAMAN KEBIJAKAN PRIVASI (TIDAK DIUBAH)
 // ============================================
 class PrivacyPolicyPage extends StatelessWidget {
   const PrivacyPolicyPage({super.key});

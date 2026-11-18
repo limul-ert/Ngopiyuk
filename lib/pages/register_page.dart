@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart'; // ✅ BARU
+import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'main_page.dart';
 import 'login_page.dart';
@@ -104,7 +105,7 @@ class _RegisterPageState extends State<RegisterPage> {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const MainPage()),
-          (route) => false,
+      (route) => false,
     );
   }
 
@@ -237,14 +238,13 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Image.network(
-                  'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200&q=80',
+                // ✅ DIUBAH: Image.network → CachedNetworkImage
+                CachedNetworkImage(
+                  imageUrl:
+                      'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200&q=80',
                   fit: BoxFit.cover,
-                  loadingBuilder: (context, child, progress) {
-                    if (progress == null) return child;
-                    return Container(color: cardColor);
-                  },
-                  errorBuilder: (context, error, stackTrace) => Container(
+                  placeholder: (context, url) => Container(color: cardColor),
+                  errorWidget: (context, url, error) => Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -296,14 +296,13 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.network(
-                'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80',
+              // ✅ DIUBAH: Image.network → CachedNetworkImage
+              CachedNetworkImage(
+                imageUrl:
+                    'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80',
                 fit: BoxFit.cover,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return Container(color: cardColor);
-                },
-                errorBuilder: (context, error, stackTrace) => Container(
+                placeholder: (context, url) => Container(color: cardColor),
+                errorWidget: (context, url, error) => Container(
                   color: cardColor,
                   child: const Icon(
                     Icons.coffee,
@@ -571,8 +570,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   thickness: 1,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
                   'Or Sign up with',
                   style: TextStyle(
@@ -713,13 +712,11 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(28),
-          borderSide:
-          const BorderSide(color: Colors.redAccent, width: 1),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(28),
-          borderSide:
-          const BorderSide(color: Colors.redAccent, width: 1.5),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
         ),
         errorStyle: const TextStyle(
           color: Colors.redAccent,

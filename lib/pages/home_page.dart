@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
@@ -14,6 +14,7 @@ import '../widgets/promo_carousel.dart';
 import '../widgets/category_row.dart';
 import '../widgets/cafe_card.dart';
 import '../widgets/animations.dart';
+import '../widgets/home_skeleton.dart';
 import 'cafe_detail_page.dart';
 import 'favorites_page.dart';
 import 'search_page.dart';
@@ -32,6 +33,9 @@ class HomePageState extends State<HomePage> {
   String _userAvatar = '😎';
   Uint8List? _avatarImageBytes;
 
+  // true = tampilkan skeleton shimmer, false = tampilkan konten asli
+  bool _isLoading = true;
+
   final Set<String> _favoriteCafeNames = {};
 
   static const Color primaryColor = Color(0xFFC8956D);
@@ -42,6 +46,10 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadUserData();
+    // Skeleton loading (shimmer) tampil sebentar sebelum konten Home muncul
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) setState(() => _isLoading = false);
+    });
     // Beri jeda 2 detik biar UI home ke-load dulu, baru cek update
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) _checkForUpdate();
@@ -293,7 +301,9 @@ class HomePageState extends State<HomePage> {
       drawer: _buildDrawer(),
       body: SafeArea(
         bottom: false,
-        child: SingleChildScrollView(
+        child: _isLoading
+            ? const HomeSkeleton()
+            : SingleChildScrollView(
           padding: EdgeInsets.only(bottom: bottomPadding.toDouble()),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

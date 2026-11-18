@@ -1,10 +1,14 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart'; // <-- IMPORT GOOGLE FONTS
+
+// Pastikan path import di bawah ini sesuai dengan struktur folder Anda
 import 'providers/cart_provider.dart';
 import 'providers/chat_provider.dart';
 import 'pages/login_page.dart';
 
 void main() {
+  // Menjalankan aplikasi
   runApp(const NgopiYukApp());
 }
 
@@ -16,6 +20,7 @@ class NgopiYukApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
+          // Memanggil loadCart() saat CartProvider pertama kali dibuat
           create: (_) => CartProvider()..loadCart(),
         ),
         ChangeNotifierProvider(
@@ -33,6 +38,10 @@ class NgopiYukApp extends StatelessWidget {
             brightness: Brightness.dark,
           ),
           useMaterial3: true,
+          
+          // ===== IMPLEMENTASI PACKAGE GEMS: GOOGLE FONTS =====
+          // Menggunakan font Poppins untuk seluruh teks di aplikasi
+          fontFamily: GoogleFonts.poppins().fontFamily,
         ),
         home: const LoginPage(),
       ),

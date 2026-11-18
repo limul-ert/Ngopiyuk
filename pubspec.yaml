@@ -23,9 +23,18 @@ dependencies:
 
   # Package untuk fitur Share (Bagikan)
   share_plus: ^10.0.0
+  dio: ^5.11.1
+  google_fonts: ^8.2.1
+  flutter_slidable: ^4.0.3
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
 
+<<<<<<< HEAD
   flutter_animate: ^4.5.0
 
+=======
+  material_ui: ^0.0.1
+>>>>>>> c4910e8e96c10655f2a96145eb05b50bd6211135
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -40,6 +49,7 @@ flutter:
     - assets/images/mascot/
     - assets/images/cafe/
     - assets/images/promo/
+    - assets/images/members/
 
 flutter_launcher_icons:
   android: "launcher_icon"

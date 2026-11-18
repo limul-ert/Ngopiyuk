@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 /// Widget reusable untuk menampilkan gambar cafe.
@@ -10,6 +12,8 @@ import 'package:flutter/material.dart';
 /// - Built-in loading indicator
 /// - Built-in error fallback (icon cafe)
 /// - Support `borderRadius`
+/// - Web: Image.network lewat elemen <img> (tanpa masalah CORS)
+/// - Android/iOS/desktop: CachedNetworkImage (cache di disk)
 class CafeImage extends StatelessWidget {
   final String source;
   final double? width;
@@ -72,14 +76,27 @@ class CafeImage extends StatelessWidget {
     }
 
     if (_isNetwork) {
-      return Image.network(
-        source,
+      // WEB: pakai Image.network + elemen <img> HTML supaya tidak diblokir CORS
+      // (browser sudah punya cache sendiri, jadi cached_network_image tidak perlu).
+      if (kIsWeb) {
+        return Image.network(
+          source,
+          fit: fit,
+          webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+          loadingBuilder: (context, child, progress) {
+            if (progress == null) return child;
+            return _buildLoading();
+          },
+          errorBuilder: (context, error, stackTrace) => _buildFallback(),
+        );
+      }
+
+      // ANDROID / iOS / DESKTOP: pakai cache di disk.
+      return CachedNetworkImage(
+        imageUrl: source,
         fit: fit,
-        loadingBuilder: (context, child, progress) {
-          if (progress == null) return child;
-          return _buildLoading();
-        },
-        errorBuilder: (context, error, stackTrace) => _buildFallback(),
+        placeholder: (context, url) => _buildLoading(),
+        errorWidget: (context, url, error) => _buildFallback(),
       );
     }
 
