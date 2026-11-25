@@ -7,11 +7,7 @@ class MascotEmpty extends StatelessWidget {
   final String imagePath;
   final double width;
 
-  const MascotEmpty({
-    super.key,
-    required this.imagePath,
-    this.width = 200,
-  });
+  const MascotEmpty({super.key, required this.imagePath, this.width = 200});
 
   @override
   Widget build(BuildContext context) {

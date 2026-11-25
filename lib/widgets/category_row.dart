@@ -31,10 +31,7 @@ class CategoryRow extends StatelessWidget {
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
               margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 10,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
                 color: isSelected
                     ? const Color(0xFFC8956D)
@@ -53,8 +50,7 @@ class CategoryRow extends StatelessWidget {
                   style: TextStyle(
                     color: isSelected ? Colors.black : Colors.grey,
                     fontSize: 13,
-                    fontWeight:
-                    isSelected ? FontWeight.bold : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   ),
                 ),
               ),

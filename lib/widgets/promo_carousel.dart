@@ -1,7 +1,9 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+
 import '../models/cafe.dart';
 import '../providers/cart_provider.dart';
 import '../pages/cart_page.dart';
@@ -70,8 +72,7 @@ class _PromoCarouselState extends State<PromoCarousel> {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle,
-                color: Colors.black, size: 20),
+            const Icon(Icons.check_circle, color: Colors.black, size: 20),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -90,9 +91,7 @@ class _PromoCarouselState extends State<PromoCarousel> {
         backgroundColor: primaryColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
 
@@ -160,10 +159,7 @@ class _PromoCard extends StatelessWidget {
   final Promo promo;
   final VoidCallback onTap;
 
-  const _PromoCard({
-    required this.promo,
-    required this.onTap,
-  });
+  const _PromoCard({required this.promo, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -175,10 +171,7 @@ class _PromoCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             // ===== GAMBAR =====
-            CafeImage(
-              source: promo.imageUrl,
-              fit: BoxFit.cover,
-            ),
+            CafeImage(source: promo.imageUrl, fit: BoxFit.cover),
 
             // ===== OVERLAY =====
             Container(
@@ -228,7 +221,9 @@ class _PromoCard extends StatelessWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFC8956D),
                       borderRadius: BorderRadius.circular(8),

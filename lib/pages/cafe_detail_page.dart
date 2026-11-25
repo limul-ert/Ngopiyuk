@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
+
 import '../models/cafe.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/cafe_image.dart';
@@ -89,11 +90,51 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
         backgroundColor: cardColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
+  }
+
+  Future<void> _shareCafe() async {
+    final cafe = widget.cafe;
+
+    final mapsUrl = Uri.https(
+      'www.google.com',
+      '/maps/search/',
+      {
+        'api': '1',
+        'query': '${cafe.name}, ${cafe.address}',
+      },
+    );
+
+    final shareText = '''
+☕ Yuk kunjungi ${cafe.name}!
+
+⭐ Rating: ${cafe.rating} (${cafe.reviewCount} review)
+
+🕒 Jam buka:
+${cafe.openHours}
+
+💰 Kisaran harga:
+${cafe.priceRange}
+
+📍 Alamat:
+${cafe.address}
+
+🗺️ Lokasi Google Maps:
+$mapsUrl
+
+Temukan cafe menarik lainnya melalui aplikasi NgopiYuk!
+''';
+
+    try {
+      await Share.share(
+        shareText,
+        subject: 'NgopiYuk - ${cafe.name}',
+      );
+    } catch (e) {
+      _showError('Gagal membagikan informasi kafe: $e');
+    }
   }
 
   Future<void> _openMaps() async {
@@ -137,9 +178,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
   void _openChat() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => ChatPage(cafe: widget.cafe),
-      ),
+      MaterialPageRoute(builder: (_) => ChatPage(cafe: widget.cafe)),
     );
   }
 
@@ -155,8 +194,8 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
     final cafe = widget.cafe;
     final categories = _availableCategories;
 
-    final String activeCategory = categories.isNotEmpty 
-        ? categories[_selectedTabIndex] 
+    final String activeCategory = categories.isNotEmpty
+        ? categories[_selectedTabIndex]
         : 'Minuman';
 
     return Scaffold(
@@ -174,37 +213,30 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                   color: Colors.black.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back,
-                    color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
               onPressed: () => Navigator.pop(context),
             ),
             actions: [
-              Builder(
-                builder: (BuildContext context) {
-                  final RenderBox? box = context.findRenderObject() as RenderBox?;
-                  return IconButton(
-                    icon: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.share,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                    onPressed: () {
-                      Share.share(
-                        'Yuk ngopi di ${cafe.name}! ☕\n\nLokasi: ${cafe.address}\n\nTemukan cafe terbaik di Madiun lewat aplikasi NgopiYuk!',
-                        subject: 'NgopiYuk - ${cafe.name}',
-                        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
-                      );
-                    },
-                  );
-                },
+              IconButton(
+                tooltip: 'Bagikan kafe',
+                icon: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.share,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                onPressed: _shareCafe,
               ),
               Consumer<CartProvider>(
                 builder: (context, cart, _) {
@@ -274,10 +306,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  CafeImage(
-                    source: cafe.imageUrl,
-                    fit: BoxFit.cover,
-                  ),
+                  CafeImage(source: cafe.imageUrl, fit: BoxFit.cover),
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -327,7 +356,9 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                       Text(
                         '(${cafe.reviewCount} review)',
                         style: const TextStyle(
-                            color: Colors.grey, fontSize: 12),
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -370,16 +401,20 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.location_on,
-                          color: primaryColor, size: 18),
+                      const Icon(
+                        Icons.location_on,
+                        color: primaryColor,
+                        size: 18,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           cafe.address,
                           style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 13,
-                              height: 1.5),
+                            color: Colors.grey,
+                            fontSize: 13,
+                            height: 1.5,
+                          ),
                         ),
                       ),
                     ],
@@ -387,14 +422,15 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.phone,
-                          color: primaryColor, size: 18),
+                      const Icon(Icons.phone, color: primaryColor, size: 18),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           cafe.phone,
                           style: const TextStyle(
-                              color: Colors.grey, fontSize: 13),
+                            color: Colors.grey,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ],
@@ -445,7 +481,10 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                   child: Center(
                     child: Padding(
                       padding: EdgeInsets.all(20.0),
-                      child: Text('Gagal memuat menu: ${snapshot.error}', style: const TextStyle(color: Colors.white)),
+                      child: Text(
+                        'Gagal memuat menu: ${snapshot.error}',
+                        style: const TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
                 );
@@ -457,7 +496,10 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                   child: Center(
                     child: Padding(
                       padding: EdgeInsets.all(20.0),
-                      child: Text('Tidak ada menu ditemukan dari API.', style: TextStyle(color: Colors.white)),
+                      child: Text(
+                        'Tidak ada menu ditemukan dari API.',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
                 );
@@ -466,21 +508,20 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
               return SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                 sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final menu = menus[index];
-                      final int dynamicPrice = (18000 + ((menu['title']?.length ?? 5) * 1200) % 25000).toInt();
-                  
-                      final menuItem = MenuItem(
-                        name: menu['title'] ?? 'Menu Pilihan',
-                        price: dynamicPrice, 
-                        imageUrl: menu['image'] ?? '',
-                        category: activeCategory,
-                      );  
-                      return _menuCard(menuItem);
-                    },
-                    childCount: menus.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final menu = menus[index];
+                    final int dynamicPrice =
+                        (18000 + ((menu['title']?.length ?? 5) * 1200) % 25000)
+                            .toInt();
+
+                    final menuItem = MenuItem(
+                      name: menu['title'] ?? 'Menu Pilihan',
+                      price: dynamicPrice,
+                      imageUrl: menu['image'] ?? '',
+                      category: activeCategory,
+                    );
+                    return _menuCard(menuItem);
+                  }, childCount: menus.length),
                 ),
               );
             },
@@ -577,10 +618,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
               children: [
                 AspectRatio(
                   aspectRatio: 16 / 9,
-                  child: CafeImage(
-                    source: promo.imageUrl,
-                    fit: BoxFit.cover,
-                  ),
+                  child: CafeImage(source: promo.imageUrl, fit: BoxFit.cover),
                 ),
                 Positioned.fill(
                   child: Container(
@@ -696,9 +734,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
         backgroundColor: primaryColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
 
@@ -721,8 +757,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
         children: [
           Icon(icon, color: primaryColor, size: 16),
           const SizedBox(width: 6),
-          Text(text,
-              style: const TextStyle(color: Colors.white, fontSize: 12)),
+          Text(text, style: const TextStyle(color: Colors.white, fontSize: 12)),
         ],
       ),
     );
@@ -807,8 +842,11 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                           SnackBar(
                             content: Row(
                               children: [
-                                const Icon(Icons.check_circle,
-                                    color: Colors.black, size: 20),
+                                const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.black,
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
@@ -852,8 +890,11 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: const [
-                            Icon(Icons.shopping_cart,
-                                color: Colors.white, size: 14),
+                            Icon(
+                              Icons.shopping_cart,
+                              color: Colors.white,
+                              size: 14,
+                            ),
                             SizedBox(width: 6),
                             Text(
                               'Buy Now',
@@ -903,7 +944,10 @@ class _TabPillsHeader extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       height: 58,
       color: bgColor,
@@ -922,22 +966,19 @@ class _TabPillsHeader extends SliverPersistentHeaderDelegate {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeInOut,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: isActive ? primaryColor : Colors.white,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: isActive
                     ? [
-                  BoxShadow(
-                    color: primaryColor.withValues(alpha: 0.35),
-                    blurRadius: 12,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
+                        BoxShadow(
+                          color: primaryColor.withValues(alpha: 0.35),
+                          blurRadius: 12,
+                          spreadRadius: 1,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
                     : null,
               ),
               child: Row(

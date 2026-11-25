@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import '../models/cafe.dart';
 import '../widgets/cafe_image.dart'; // ← ✅ TAMBAH
 
@@ -62,11 +63,7 @@ class FavoritesPage extends StatelessWidget {
             const Text(
               'Simpan cafe favoritmu di sini biar gampang\ndicari kapan aja kamu mau ngopi.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 13,
-                height: 1.5,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 13, height: 1.5),
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
@@ -134,8 +131,7 @@ class FavoritesPage extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.star,
-                            color: primaryColor, size: 14),
+                        const Icon(Icons.star, color: primaryColor, size: 14),
                         const SizedBox(width: 4),
                         Text(
                           '${cafe.rating}',
@@ -150,7 +146,9 @@ class FavoritesPage extends StatelessWidget {
                           child: Text(
                             cafe.openHours,
                             style: const TextStyle(
-                                color: Colors.grey, fontSize: 11),
+                              color: Colors.grey,
+                              fontSize: 11,
+                            ),
                           ),
                         ),
                       ],

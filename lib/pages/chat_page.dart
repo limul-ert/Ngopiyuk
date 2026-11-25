@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+
 import '../models/cafe.dart';
 import '../models/chat_message.dart';
 import '../providers/chat_provider.dart';
@@ -219,9 +220,14 @@ class _ChatPageState extends State<ChatPage> {
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
-              title: const Text('Hapus Riwayat Chat',
-                  style: TextStyle(color: Colors.white)),
+              leading: const Icon(
+                Icons.delete_outline,
+                color: Colors.redAccent,
+              ),
+              title: const Text(
+                'Hapus Riwayat Chat',
+                style: TextStyle(color: Colors.white),
+              ),
               onTap: () async {
                 Navigator.pop(sheetContext);
                 await context.read<ChatProvider>().clearChat(widget.cafe.name);
@@ -247,8 +253,9 @@ class _ChatPageState extends State<ChatPage> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
-        mainAxisAlignment:
-        isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser) ...[
@@ -260,11 +267,16 @@ class _ChatPageState extends State<ChatPage> {
                 color: primaryColor.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
                 border: Border.all(
-                    color: primaryColor.withValues(alpha: 0.4), width: 1),
+                  color: primaryColor.withValues(alpha: 0.4),
+                  width: 1,
+                ),
               ),
               alignment: Alignment.center,
-              child: const Icon(Icons.local_cafe,
-                  color: primaryColor, size: 14),
+              child: const Icon(
+                Icons.local_cafe,
+                color: primaryColor,
+                size: 14,
+              ),
             ),
             const SizedBox(width: 8),
           ],
@@ -273,10 +285,7 @@ class _ChatPageState extends State<ChatPage> {
               constraints: BoxConstraints(
                 maxWidth: MediaQuery.of(context).size.width * 0.72,
               ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 10,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: isUser ? userBubble : cafeBubble,
                 borderRadius: BorderRadius.only(
@@ -332,18 +341,16 @@ class _ChatPageState extends State<ChatPage> {
               color: primaryColor.withValues(alpha: 0.2),
               shape: BoxShape.circle,
               border: Border.all(
-                  color: primaryColor.withValues(alpha: 0.4), width: 1),
+                color: primaryColor.withValues(alpha: 0.4),
+                width: 1,
+              ),
             ),
             alignment: Alignment.center,
-            child: const Icon(Icons.local_cafe,
-                color: primaryColor, size: 14),
+            child: const Icon(Icons.local_cafe, color: primaryColor, size: 14),
           ),
           const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: cafeBubble,
               borderRadius: const BorderRadius.only(
@@ -386,16 +393,11 @@ class _ChatPageState extends State<ChatPage> {
           return GestureDetector(
             onTap: () => _handleQuickReply(item['text']!),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
                 color: cardColor,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: primaryColor.withValues(alpha: 0.3),
-                ),
+                border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
               ),
               alignment: Alignment.center,
               child: Text(
@@ -433,9 +435,7 @@ class _ChatPageState extends State<ChatPage> {
               decoration: BoxDecoration(
                 color: inputBg,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.06),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
               ),
               child: TextField(
                 controller: _controller,

@@ -32,6 +32,9 @@ dependencies:
   flutter_animate: ^4.5.0
   material_ui: ^0.0.1
   smooth_page_indicator: ^3.0.0
+  firebase_core: ^5.2.0
+  firebase_auth: ^7.1.0
+  cloud_firestore: ^7.2.0
 
 dev_dependencies:
   flutter_test:

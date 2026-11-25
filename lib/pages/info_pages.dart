@@ -6,7 +6,9 @@ import 'package:material_ui/material_ui.dart';
 class _Colors {
   static const bgColor = Color(0xFF0A0A0A);
   static const cardColor = Color(0xFF181818);
-  static const limeColor = Color(0xFFC7F464); // Bisa diganti 0xFFC8956D jika mau warna coklat
+  static const limeColor = Color(
+    0xFFC7F464,
+  ); // Bisa diganti 0xFFC8956D jika mau warna coklat
   static const textPrimary = Colors.white;
   static const textSecondary = Colors.grey;
 }
@@ -32,9 +34,7 @@ class _InfoHeader extends StatelessWidget {
               decoration: BoxDecoration(
                 color: _Colors.cardColor,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.05),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
               child: const Icon(
                 Icons.arrow_back,
@@ -178,13 +178,19 @@ class ContactPage extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              _buildSocialIcon(Icons.camera_alt_outlined,
-                                  'Instagram'),
                               _buildSocialIcon(
-                                  Icons.facebook_outlined, 'Facebook'),
+                                Icons.camera_alt_outlined,
+                                'Instagram',
+                              ),
+                              _buildSocialIcon(
+                                Icons.facebook_outlined,
+                                'Facebook',
+                              ),
                               _buildSocialIcon(Icons.public, 'Website'),
                               _buildSocialIcon(
-                                  Icons.chat_bubble_outline, 'WhatsApp'),
+                                Icons.chat_bubble_outline,
+                                'WhatsApp',
+                              ),
                             ],
                           ),
                         ],
@@ -211,9 +217,7 @@ class ContactPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: _Colors.cardColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.04),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
       ),
       child: Row(
         children: [
@@ -264,19 +268,14 @@ class ContactPage extends StatelessWidget {
           decoration: BoxDecoration(
             color: _Colors.bgColor,
             shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.05),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Icon(icon, color: _Colors.textPrimary, size: 22),
         ),
         const SizedBox(height: 6),
         Text(
           label,
-          style: const TextStyle(
-            color: _Colors.textSecondary,
-            fontSize: 11,
-          ),
+          style: const TextStyle(color: _Colors.textSecondary, fontSize: 11),
         ),
       ],
     );
@@ -296,7 +295,7 @@ class AboutAppPage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const _InfoHeader(title: 'Tentang Kami'), 
+            const _InfoHeader(title: 'Tentang Kami'),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -323,7 +322,9 @@ class AboutAppPage extends StatelessWidget {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: _Colors.limeColor.withValues(alpha: 0.3),
+                                  color: _Colors.limeColor.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   blurRadius: 20,
                                   spreadRadius: 2,
                                 ),
@@ -352,7 +353,9 @@ class AboutAppPage extends StatelessWidget {
                           const SizedBox(height: 4),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 4),
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: _Colors.limeColor.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(20),
@@ -396,11 +399,11 @@ class AboutAppPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // DAFTAR ANGGOTA KELOMPOK
                     _buildMemberCard(
-                      name: 'Maulana Halim', 
-                      nim: 'NIM. 25051204386', 
+                      name: 'Maulana Halim',
+                      nim: 'NIM. 25051204386',
                       role: 'Google Fonts',
                       imagePath: 'assets/images/members/anggota 1.jpeg',
                     ),
@@ -495,9 +498,7 @@ class AboutAppPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: _Colors.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.04),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
       ),
       child: Row(
         children: [
@@ -521,14 +522,10 @@ class AboutAppPage extends StatelessWidget {
                       size: 30,
                     ),
                   )
-                : const Icon(
-                    Icons.person,
-                    color: _Colors.limeColor,
-                    size: 30,
-                  ),
+                : const Icon(Icons.person, color: _Colors.limeColor, size: 30),
           ),
           const SizedBox(width: 14),
-          
+
           // Info Teks
           Expanded(
             child: Column(
@@ -552,7 +549,10 @@ class AboutAppPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: _Colors.limeColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(4),
@@ -585,9 +585,7 @@ class AboutAppPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: _Colors.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.04),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -716,9 +714,7 @@ class TermsPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: _Colors.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.04),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
       ),
       child: Column(
         children: [
@@ -744,10 +740,7 @@ class TermsPage extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: const TextStyle(
-              color: _Colors.textSecondary,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: _Colors.textSecondary, fontSize: 12),
           ),
         ],
       ),
@@ -762,9 +755,7 @@ class TermsPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: _Colors.cardColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.04),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -889,9 +880,7 @@ class PrivacyPolicyPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: _Colors.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.04),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
       ),
       child: Column(
         children: [
@@ -917,10 +906,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: const TextStyle(
-              color: _Colors.textSecondary,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: _Colors.textSecondary, fontSize: 12),
           ),
         ],
       ),
@@ -935,9 +921,7 @@ class PrivacyPolicyPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: _Colors.cardColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.04),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

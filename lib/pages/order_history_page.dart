@@ -1,17 +1,50 @@
+
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
+
 import '../models/order.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/mascot_empty.dart';
 import 'order_detail_page.dart';
 
-class OrderHistoryPage extends StatelessWidget {
+class OrderHistoryPage extends StatefulWidget {
   const OrderHistoryPage({super.key});
 
+  @override
+  State<OrderHistoryPage> createState() => _OrderHistoryPageState();
+}
+
+class _OrderHistoryPageState extends State<OrderHistoryPage> {
   static const Color primaryColor = Color(0xFFC8956D);
   static const Color bgColor = Color(0xFF0F0F0F);
   static const Color cardColor = Color(0xFF1A1A1A);
   static const Color dividerColor = Color(0xFF252525);
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadOrders();
+    });
+  }
+
+  Future<void> _loadOrders() async {
+    if (!mounted) return;
+
+    try {
+      await context.read<CartProvider>().loadOrders();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal memuat riwayat pesanan. Silakan coba lagi.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +60,19 @@ class OrderHistoryPage extends StatelessWidget {
               child: Consumer<CartProvider>(
                 builder: (context, cart, _) {
                   final orders = cart.orders;
+
+                  if (cart.isLoadingOrders) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: primaryColor,
+                      ),
+                    );
+                  }
+
                   if (orders.isEmpty) {
                     return _buildEmptyState(context);
                   }
+
                   return _buildOrderList(context, orders);
                 },
               ),
@@ -84,7 +127,7 @@ class OrderHistoryPage extends StatelessWidget {
   }
 
   // ============================================
-  // EMPTY STATE — pakai maskot riwayat
+  // EMPTY STATE
   // ============================================
   Widget _buildEmptyState(BuildContext context) {
     return Center(
@@ -94,7 +137,6 @@ class OrderHistoryPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ← ✅ MASKOT RIWAYAT (perbesar 280)
             const MascotEmpty(
               imagePath: 'assets/images/mascot/mascot_riwayat.png',
               width: 280,
@@ -110,9 +152,12 @@ class OrderHistoryPage extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
+
             const SizedBox(height: 12),
+
             const Text(
-              'Pesanan yang kamu lakukan bakal muncul\ndi sini. Yuk mulai pesen!',
+              'Pesanan yang kamu lakukan bakal muncul\n'
+              'di sini. Yuk mulai pesen!',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.grey,
@@ -120,7 +165,9 @@ class OrderHistoryPage extends StatelessWidget {
                 height: 1.5,
               ),
             ),
+
             const SizedBox(height: 32),
+
             ElevatedButton.icon(
               onPressed: () {
                 if (Navigator.canPop(context)) {
@@ -148,6 +195,9 @@ class OrderHistoryPage extends StatelessWidget {
     );
   }
 
+  // ============================================
+  // ORDER LIST
+  // ============================================
   Widget _buildOrderList(BuildContext context, List<Order> orders) {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
@@ -159,6 +209,9 @@ class OrderHistoryPage extends StatelessWidget {
     );
   }
 
+  // ============================================
+  // ORDER CARD
+  // ============================================
   Widget _buildOrderCard(BuildContext context, Order order) {
     return GestureDetector(
       onTap: () {
@@ -174,7 +227,10 @@ class OrderHistoryPage extends StatelessWidget {
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: dividerColor, width: 1),
+          border: Border.all(
+            color: dividerColor,
+            width: 1,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,7 +255,10 @@ class OrderHistoryPage extends StatelessWidget {
               ),
             ),
 
-            Container(height: 1, color: dividerColor),
+            Container(
+              height: 1,
+              color: dividerColor,
+            ),
 
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -232,6 +291,7 @@ class OrderHistoryPage extends StatelessWidget {
                       ),
                     ],
                   ),
+
                   const SizedBox(height: 10),
 
                   Row(
@@ -242,7 +302,9 @@ class OrderHistoryPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 14),
                       _buildIconText(
-                        order.isImmediate ? Icons.bolt : Icons.schedule,
+                        order.isImmediate
+                            ? Icons.bolt
+                            : Icons.schedule,
                         order.isImmediate
                             ? 'Segera'
                             : _formatTimeOnly(order.pickupTime!),
@@ -251,13 +313,21 @@ class OrderHistoryPage extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 12),
-                  Container(height: 1, color: dividerColor),
+
+                  Container(
+                    height: 1,
+                    color: dividerColor,
+                  ),
+
                   const SizedBox(height: 12),
 
                   Row(
                     children: [
                       Text(
-                        '${order.items.fold<int>(0, (sum, i) => sum + i.quantity)} item',
+                        '${order.items.fold<int>(
+                          0,
+                          (sum, item) => sum + item.quantity,
+                        )} item',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.5),
                           fontSize: 12,
@@ -265,7 +335,10 @@ class OrderHistoryPage extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        'Rp ${order.total.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
+                        'Rp ${order.total.toString().replaceAllMapped(
+                          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+                          (m) => '${m[1]}.',
+                        )}',
                         style: const TextStyle(
                           color: primaryColor,
                           fontSize: 15,
@@ -277,10 +350,11 @@ class OrderHistoryPage extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 14),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
+                      const Text(
                         'Lihat Detail',
                         style: TextStyle(
                           color: primaryColor,
@@ -306,6 +380,9 @@ class OrderHistoryPage extends StatelessWidget {
     );
   }
 
+  // ============================================
+  // ICON + TEXT
+  // ============================================
   Widget _buildIconText(IconData icon, String text) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -327,19 +404,26 @@ class OrderHistoryPage extends StatelessWidget {
     );
   }
 
+  // ============================================
+  // STATUS BADGE
+  // ============================================
   Widget _buildStatusBadge(String status) {
     Color color;
+
     switch (status.toLowerCase()) {
       case 'selesai':
       case 'diambil':
         color = const Color(0xFF4CAF50);
         break;
+
       case 'diproses':
         color = const Color(0xFF2196F3);
         break;
+
       case 'dibatalkan':
         color = const Color(0xFFE53935);
         break;
+
       case 'menunggu diambil':
       default:
         color = const Color(0xFFFF9800);
@@ -347,7 +431,10 @@ class OrderHistoryPage extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 4,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(4),
@@ -368,22 +455,41 @@ class OrderHistoryPage extends StatelessWidget {
     );
   }
 
+  // ============================================
+  // FORMAT DATE
+  // ============================================
   String _formatDate(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
     ];
+
     final day = dt.day.toString().padLeft(2, '0');
     final month = months[dt.month - 1];
     final year = dt.year;
     final hour = dt.hour.toString().padLeft(2, '0');
     final min = dt.minute.toString().padLeft(2, '0');
+
     return '$day $month $year, $hour:$min';
   }
 
+  // ============================================
+  // FORMAT PICKUP TIME
+  // ============================================
   String _formatTimeOnly(DateTime dt) {
     final hour = dt.hour.toString().padLeft(2, '0');
     final min = dt.minute.toString().padLeft(2, '0');
+
     return '$hour:$min WIB';
   }
 }

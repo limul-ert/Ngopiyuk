@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:shimmer/shimmer.dart';
 
 /// Skeleton loading untuk HomePage (package: shimmer).
@@ -43,14 +43,21 @@ class HomeSkeleton extends StatelessWidget {
   }
 
   // Kotak dasar. Warna harus solid; shimmer yang mewarnai.
-  Widget _box({double? width, double? height, double radius = 8, BoxShape shape = BoxShape.rectangle}) {
+  Widget _box({
+    double? width,
+    double? height,
+    double radius = 8,
+    BoxShape shape = BoxShape.rectangle,
+  }) {
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
         color: Colors.white,
         shape: shape,
-        borderRadius: shape == BoxShape.circle ? null : BorderRadius.circular(radius),
+        borderRadius: shape == BoxShape.circle
+            ? null
+            : BorderRadius.circular(radius),
       ),
     );
   }
@@ -121,7 +128,7 @@ class HomeSkeleton extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: 3,
-        itemBuilder: (_, __) => Padding(
+        itemBuilder: (_, _) => Padding(
           padding: const EdgeInsets.only(right: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,7 +153,7 @@ class HomeSkeleton extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: 5,
-        itemBuilder: (_, __) => Padding(
+        itemBuilder: (_, _) => Padding(
           padding: const EdgeInsets.only(right: 10),
           child: _box(width: 84, height: 40, radius: 20),
         ),

@@ -1,5 +1,7 @@
+
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/cart_provider.dart';
 import 'order_success_page.dart';
 
@@ -19,8 +21,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
   String _metodeBayar = 'COD';
   bool _isLoading = false;
 
-  // ===== PICKUP MODE =====
-  bool _isImmediate = true; // true = Segera, false = Pilih Jam
+  // PICKUP MODE
+  bool _isImmediate = true;
   DateTime? _pickupTime;
 
   static const Color primaryColor = Color(0xFFC8956D);
@@ -30,9 +32,21 @@ class _CheckoutPageState extends State<CheckoutPage> {
   static const Color dividerColor = Color(0xFF252525);
 
   final List<Map<String, dynamic>> _metodeBayarList = [
-    {'name': 'COD', 'icon': Icons.payments_outlined, 'label': 'Bayar di Tempat'},
-    {'name': 'Transfer Bank', 'icon': Icons.account_balance_outlined, 'label': 'BCA / Mandiri / BNI'},
-    {'name': 'E-Wallet', 'icon': Icons.wallet_outlined, 'label': 'GoPay / OVO / Dana'},
+    {
+      'name': 'COD',
+      'icon': Icons.payments_outlined,
+      'label': 'Bayar di Tempat',
+    },
+    {
+      'name': 'Transfer Bank',
+      'icon': Icons.account_balance_outlined,
+      'label': 'BCA / Mandiri / BNI',
+    },
+    {
+      'name': 'E-Wallet',
+      'icon': Icons.wallet_outlined,
+      'label': 'GoPay / OVO / Dana',
+    },
   ];
 
   @override
@@ -47,8 +61,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
   // PICK TIME
   // ============================================
   Future<void> _pickPickupTime() async {
+    if (_isLoading) return;
+
     final now = DateTime.now();
-    final initialTime = TimeOfDay(hour: now.hour + 1, minute: 0);
+    final initialTime = TimeOfDay(
+      hour: (now.hour + 1) % 24,
+      minute: 0,
+    );
 
     final picked = await showTimePicker(
       context: context,
@@ -80,9 +99,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
       },
     );
 
-    if (picked == null) return;
+    if (picked == null || !mounted) return;
 
     final now2 = DateTime.now();
+
     var pickup = DateTime(
       now2.year,
       now2.month,
@@ -91,8 +111,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
       picked.minute,
     );
 
-    // Kalau jam yang dipilih < sekarang + 30 menit → anggap besok
-    // (biar user nggak salah input, contoh: sekarang jam 20, user pilih jam 08)
+    // Jika waktu kurang dari 30 menit dari sekarang,
+    // anggap waktu pengambilan adalah besok.
     if (pickup.isBefore(now2.add(const Duration(minutes: 30)))) {
       pickup = pickup.add(const Duration(days: 1));
     }
@@ -107,43 +127,97 @@ class _CheckoutPageState extends State<CheckoutPage> {
   // HANDLE CHECKOUT
   // ============================================
   Future<void> _handleCheckout() async {
+    // Mencegah pemanggilan checkout berulang.
+    if (_isLoading) return;
+
     FocusScope.of(context).unfocus();
 
+    // Validasi form.
     if (!_formKey.currentState!.validate()) return;
 
-    // Validasi: kalau pilih jam, harus ada _pickupTime
+    // Validasi waktu pengambilan.
     if (!_isImmediate && _pickupTime == null) {
-      _showSnackBar('Pilih jam pengambilan dulu ya', Icons.warning_amber_rounded);
+      _showSnackBar(
+        'Pilih jam pengambilan dulu ya',
+        Icons.warning_amber_rounded,
+      );
       return;
     }
 
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 1000));
-
-    if (!mounted) return;
-
     final cart = context.read<CartProvider>();
-    final order = await cart.createOrder(
-      namaPenerima: _namaController.text.trim(),
-      nomorHp: _hpController.text.trim(),
-      metodeBayar: _metodeBayar,
-      catatan: _catatanController.text.trim(),
-      pickupTime: _isImmediate ? null : _pickupTime,
-    );
 
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+    // Validasi keranjang kosong.
+    if (cart.items.isEmpty) {
+      _showSnackBar(
+        'Keranjang masih kosong',
+        Icons.warning_amber_rounded,
+      );
+      return;
+    }
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => OrderSuccessPage(order: order),
-      ),
-    );
+    // Validasi pesanan dari satu kafe.
+    if (cart.hasMultipleCafes) {
+      _showSnackBar(
+        'Pesanan harus berasal dari satu cafe',
+        Icons.warning_amber_rounded,
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Simpan pesanan ke Firestore melalui CartProvider.
+      final order = await cart.createOrder(
+        namaPenerima: _namaController.text.trim(),
+        nomorHp: _hpController.text.trim(),
+        metodeBayar: _metodeBayar,
+        catatan: _catatanController.text.trim(),
+        pickupTime: _isImmediate ? null : _pickupTime,
+      );
+
+      if (!mounted) return;
+
+      // Loading dihentikan sebelum pindah halaman.
+      setState(() {
+        _isLoading = false;
+      });
+
+      // Halaman sukses hanya dibuka jika penyimpanan berhasil.
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => OrderSuccessPage(order: order),
+        ),
+      );
+    } catch (e, stackTrace) {
+      debugPrint('ERROR CHECKOUT: $e');
+      debugPrint('STACK TRACE: $stackTrace');
+
+      if (!mounted) return;
+
+      _showSnackBar(
+        'Pesanan gagal disimpan. Silakan coba lagi. Detail: $e',
+        Icons.error_outline,
+      );
+    } finally {
+      // Memastikan loading berhenti dalam kondisi apa pun.
+      if (mounted && _isLoading) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
+  // ============================================
+  // SNACKBAR
+  // ============================================
   void _showSnackBar(String message, IconData icon) {
     ScaffoldMessenger.of(context).clearSnackBars();
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -164,7 +238,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
         backgroundColor: primaryColor,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 5),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -190,14 +264,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ===== PICKUP INFO =====
                       _buildPickupInfo(cart),
 
                       const SizedBox(height: 32),
 
-                      // ===== SECTION: INFO PEMESAN =====
                       _sectionLabel('INFO PEMESAN'),
                       const SizedBox(height: 14),
+
                       _buildTextField(
                         controller: _namaController,
                         hint: 'Nama lengkap',
@@ -209,7 +282,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           return null;
                         },
                       ),
+
                       const SizedBox(height: 10),
+
                       _buildTextField(
                         controller: _hpController,
                         hint: 'Nomor WhatsApp',
@@ -219,25 +294,27 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           if (val == null || val.trim().isEmpty) {
                             return 'Nomor HP tidak boleh kosong';
                           }
+
                           if (val.trim().length < 10) {
                             return 'Nomor HP minimal 10 digit';
                           }
+
                           return null;
                         },
                       ),
 
                       const SizedBox(height: 28),
 
-                      // ===== SECTION: JAM PENGAMBILAN =====  ← ✅ BARU
                       _sectionLabel('JAM PENGAMBILAN'),
                       const SizedBox(height: 14),
+
                       _buildPickupTimeOptions(),
 
                       const SizedBox(height: 28),
 
-                      // ===== SECTION: CATATAN =====
                       _sectionLabel('CATATAN (OPSIONAL)'),
                       const SizedBox(height: 14),
+
                       _buildTextField(
                         controller: _catatanController,
                         hint: 'Contoh: Tanpa es, extra pedas, dll',
@@ -247,20 +324,22 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
                       const SizedBox(height: 28),
 
-                      // ===== SECTION: METODE PEMBAYARAN =====
                       _sectionLabel('METODE PEMBAYARAN'),
                       const SizedBox(height: 14),
-                      ..._metodeBayarList.map((m) => _buildPaymentOption(
-                        name: m['name'],
-                        icon: m['icon'],
-                        label: m['label'],
-                      )),
+
+                      ..._metodeBayarList.map(
+                        (m) => _buildPaymentOption(
+                          name: m['name'],
+                          icon: m['icon'],
+                          label: m['label'],
+                        ),
+                      ),
 
                       const SizedBox(height: 28),
 
-                      // ===== SECTION: RINGKASAN =====
                       _sectionLabel('RINGKASAN PESANAN'),
                       const SizedBox(height: 14),
+
                       _buildOrderSummary(cart),
                     ],
                   ),
@@ -276,20 +355,23 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   // ============================================
-  // PICKUP TIME OPTIONS (SEGERA / PILIH JAM)
+  // PICKUP TIME OPTIONS
   // ============================================
   Widget _buildPickupTimeOptions() {
     return Column(
       children: [
         Row(
           children: [
-            // ===== TOMBOL: SEGERA =====
             Expanded(
               child: GestureDetector(
-                onTap: () => setState(() {
-                  _isImmediate = true;
-                  _pickupTime = null;
-                }),
+                onTap: _isLoading
+                    ? null
+                    : () {
+                        setState(() {
+                          _isImmediate = true;
+                          _pickupTime = null;
+                        });
+                      },
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -337,10 +419,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
             const SizedBox(width: 10),
 
-            // ===== TOMBOL: PILIH JAM =====
             Expanded(
               child: GestureDetector(
-                onTap: _pickPickupTime,
+                onTap: _isLoading ? null : _pickPickupTime,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -388,7 +469,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
           ],
         ),
 
-        // ===== INFO HASIL PILIHAN =====
         if (_isImmediate) ...[
           const SizedBox(height: 12),
           _buildPickupInfoBox(
@@ -402,7 +482,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             icon: Icons.event_available,
             text: 'Diambil ${_formatPickupTime(_pickupTime!)}',
             color: const Color(0xFF4CAF50),
-            onEdit: _pickPickupTime,
+            onEdit: _isLoading ? null : _pickPickupTime,
           ),
         ],
       ],
@@ -416,7 +496,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
     VoidCallback? onEdit,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 12,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
@@ -476,20 +559,29 @@ class _CheckoutPageState extends State<CheckoutPage> {
     final minStr = dt.minute.toString().padLeft(2, '0');
     final timeStr = '$hourStr:$minStr';
 
-    if (diffDays == 0) return 'hari ini pukul $timeStr WIB';
-    if (diffDays == 1) return 'besok pukul $timeStr WIB';
+    if (diffDays == 0) {
+      return 'hari ini pukul $timeStr WIB';
+    }
+
+    if (diffDays == 1) {
+      return 'besok pukul $timeStr WIB';
+    }
+
     return '${dt.day}/${dt.month}/${dt.year} pukul $timeStr WIB';
   }
 
   // ============================================
-  // PICKUP INFO (banner atas)
+  // PICKUP INFO
   // ============================================
   Widget _buildPickupInfo(CartProvider cart) {
     return Container(
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: dividerColor, width: 1),
+        border: Border.all(
+          color: dividerColor,
+          width: 1,
+        ),
       ),
       child: IntrinsicHeight(
         child: Row(
@@ -558,13 +650,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  // ============================================
+  // HEADER
+  // ============================================
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: _isLoading ? null : () => Navigator.pop(context),
             child: Container(
               width: 40,
               height: 40,
@@ -598,6 +693,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  // ============================================
+  // SECTION LABEL
+  // ============================================
   Widget _sectionLabel(String label) {
     return Text(
       label,
@@ -610,6 +708,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  // ============================================
+  // TEXT FIELD
+  // ============================================
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,
@@ -623,14 +724,21 @@ class _CheckoutPageState extends State<CheckoutPage> {
       keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 14,
+      ),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(
           color: Colors.white.withValues(alpha: 0.3),
           fontSize: 13,
         ),
-        prefixIcon: Icon(icon, color: Colors.grey, size: 20),
+        prefixIcon: Icon(
+          icon,
+          color: Colors.grey,
+          size: 20,
+        ),
         filled: true,
         fillColor: inputBg,
         contentPadding: const EdgeInsets.symmetric(
@@ -643,19 +751,31 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: dividerColor, width: 1),
+          borderSide: BorderSide(
+            color: dividerColor,
+            width: 1,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: primaryColor, width: 1.5),
+          borderSide: const BorderSide(
+            color: primaryColor,
+            width: 1.5,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1),
+          borderSide: const BorderSide(
+            color: Colors.redAccent,
+            width: 1,
+          ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+          borderSide: const BorderSide(
+            color: Colors.redAccent,
+            width: 1.5,
+          ),
         ),
         errorStyle: const TextStyle(
           color: Colors.redAccent,
@@ -665,6 +785,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  // ============================================
+  // PAYMENT OPTION
+  // ============================================
   Widget _buildPaymentOption({
     required String name,
     required IconData icon,
@@ -673,10 +796,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
     final isSelected = _metodeBayar == name;
 
     return GestureDetector(
-      onTap: () => setState(() => _metodeBayar = name),
+      onTap: _isLoading
+          ? null
+          : () => setState(() => _metodeBayar = name),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         decoration: BoxDecoration(
           color: isSelected
               ? primaryColor.withValues(alpha: 0.08)
@@ -732,7 +860,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ),
               ),
               child: isSelected
-                  ? const Icon(Icons.check, color: Colors.black, size: 12)
+                  ? const Icon(
+                      Icons.check,
+                      color: Colors.black,
+                      size: 12,
+                    )
                   : null,
             ),
           ],
@@ -741,49 +873,61 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  // ============================================
+  // ORDER SUMMARY
+  // ============================================
   Widget _buildOrderSummary(CartProvider cart) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: inputBg,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: dividerColor, width: 1),
+        border: Border.all(
+          color: dividerColor,
+          width: 1,
+        ),
       ),
       child: Column(
         children: [
-          ...cart.items.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '${item.quantity}x ${item.item.name}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 13,
+          ...cart.items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${item.quantity}x ${item.item.name}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 13,
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  'Rp ${item.subtotal.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                  Text(
+                    'Rp ${_formatRupiah(item.subtotal)}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          )),
+          ),
           Container(height: 1, color: dividerColor),
           const SizedBox(height: 12),
-          _summaryRow('Subtotal',
-              'Rp ${cart.subtotal.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}'),
+          _summaryRow(
+            'Subtotal',
+            'Rp ${_formatRupiah(cart.subtotal)}',
+          ),
           const SizedBox(height: 8),
-          _summaryRow('Biaya Layanan',
-              'Rp ${CartProvider.serviceFee.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}'),
+          _summaryRow(
+            'Biaya Layanan',
+            'Rp ${_formatRupiah(CartProvider.serviceFee)}',
+          ),
         ],
       ),
     );
@@ -812,12 +956,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  // ============================================
+  // BOTTOM BAR
+  // ============================================
   Widget _buildBottomBar(CartProvider cart) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
         color: cardColor,
-        border: Border(top: BorderSide(color: dividerColor, width: 1)),
+        border: Border(
+          top: BorderSide(
+            color: dividerColor,
+            width: 1,
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -836,7 +988,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Rp ${cart.total.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
+                'Rp ${_formatRupiah(cart.total)}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -859,28 +1011,38 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 child: Center(
                   child: _isLoading
                       ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.black,
-                      strokeWidth: 2.5,
-                    ),
-                  )
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                            strokeWidth: 2.5,
+                          ),
+                        )
                       : const Text(
-                    'Pesan Sekarang',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
+                          'Pesan Sekarang',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
                 ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  // ============================================
+  // FORMAT RUPIAH
+  // ============================================
+  String _formatRupiah(int amount) {
+    return amount.toString().replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+      (match) => '${match[1]}.',
     );
   }
 }

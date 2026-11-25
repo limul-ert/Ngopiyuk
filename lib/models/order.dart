@@ -78,9 +78,7 @@ class Order {
   static Order fromJson(Map<String, dynamic> json) {
     return Order(
       id: json['id'],
-      items: (json['items'] as List)
-          .map((i) => CartItem.fromJson(i))
-          .toList(),
+      items: (json['items'] as List).map((i) => CartItem.fromJson(i)).toList(),
       subtotal: json['subtotal'],
       serviceFee: json['serviceFee'],
       total: json['total'],

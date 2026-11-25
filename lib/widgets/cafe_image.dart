@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Widget reusable untuk menampilkan gambar cafe.
 ///
@@ -48,19 +48,12 @@ class CafeImage extends StatelessWidget {
 
     // Wrap dengan borderRadius kalau dikasih
     if (borderRadius != null) {
-      image = ClipRRect(
-        borderRadius: borderRadius!,
-        child: image,
-      );
+      image = ClipRRect(borderRadius: borderRadius!, child: image);
     }
 
     // Wrap dengan SizedBox kalau width/height dikasih
     if (width != null || height != null) {
-      image = SizedBox(
-        width: width,
-        height: height,
-        child: image,
-      );
+      image = SizedBox(width: width, height: height, child: image);
     }
 
     return image;
@@ -113,10 +106,7 @@ class CafeImage extends StatelessWidget {
       child: const SizedBox(
         width: 20,
         height: 20,
-        child: CircularProgressIndicator(
-          color: _primaryColor,
-          strokeWidth: 2,
-        ),
+        child: CircularProgressIndicator(color: _primaryColor, strokeWidth: 2),
       ),
     );
   }
@@ -127,11 +117,7 @@ class CafeImage extends StatelessWidget {
       height: height,
       color: backgroundColor ?? _fallbackBg,
       alignment: Alignment.center,
-      child: Icon(
-        fallbackIcon,
-        color: _primaryColor,
-        size: _fallbackIconSize,
-      ),
+      child: Icon(fallbackIcon, color: _primaryColor, size: _fallbackIconSize),
     );
   }
 

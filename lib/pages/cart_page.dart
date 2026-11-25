@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_slidable/flutter_slidable.dart'; // IMPORT PACKAGE BARU
+
 import '../providers/cart_provider.dart';
 import '../widgets/cafe_image.dart';
 import 'checkout_page.dart';
@@ -34,8 +35,7 @@ class CartPage extends StatelessWidget {
                 ),
 
                 // ===== BOTTOM SUMMARY =====
-                if (cart.items.isNotEmpty)
-                  _buildBottomSummary(context, cart),
+                if (cart.items.isNotEmpty) _buildBottomSummary(context, cart),
               ],
             );
           },
@@ -60,9 +60,7 @@ class CartPage extends StatelessWidget {
               decoration: BoxDecoration(
                 color: cardColor,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.05),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
               child: const Icon(
                 Icons.arrow_back,
@@ -90,9 +88,7 @@ class CartPage extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: cardColor,
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: deleteColor.withValues(alpha: 0.3),
-                  ),
+                  border: Border.all(color: deleteColor.withValues(alpha: 0.3)),
                 ),
                 child: const Icon(
                   Icons.delete_sweep_outlined, // Icon ganti jadi sapu
@@ -130,11 +126,7 @@ class CartPage extends StatelessWidget {
             const Text(
               'Yuk, mulai pesan menu favoritmu dari\ncafe-cafe terbaik di Madiun.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 13,
-                height: 1.5,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 13, height: 1.5),
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
@@ -173,11 +165,7 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCartItem(
-    BuildContext context,
-    CartProvider cart,
-    int index,
-  ) {
+  Widget _buildCartItem(BuildContext context, CartProvider cart, int index) {
     final item = cart.items[index];
 
     // ===== IMPLEMENTASI FLUTTER SLIDABLE =====
@@ -190,12 +178,8 @@ class CartPage extends StatelessWidget {
           extentRatio: 0.25, // Lebar tombol hapus (25% dari layar)
           children: [
             SlidableAction(
-              onPressed: (context) => _confirmRemoveItem(
-                context,
-                cart,
-                index,
-                item.item.name,
-              ),
+              onPressed: (context) =>
+                  _confirmRemoveItem(context, cart, index, item.item.name),
               backgroundColor: deleteColor,
               foregroundColor: Colors.white,
               icon: Icons.delete_outline,
@@ -262,7 +246,7 @@ class CartPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    
+
                     // Tombol Hapus (Trash Can) udah dihilangkan dari sini
                     Row(
                       children: [
@@ -282,7 +266,9 @@ class CartPage extends StatelessWidget {
                                 onTap: () => cart.decrement(index),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
                                 child: Text(
                                   '${item.quantity}',
                                   style: const TextStyle(
@@ -321,11 +307,7 @@ class CartPage extends StatelessWidget {
         width: 28,
         height: 28,
         alignment: Alignment.center,
-        child: Icon(
-          icon,
-          color: primaryColor,
-          size: 14,
-        ),
+        child: Icon(icon, color: primaryColor, size: 14),
       ),
     );
   }
@@ -339,9 +321,7 @@ class CartPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: cardColor,
         border: Border(
-          top: BorderSide(
-            color: Colors.white.withValues(alpha: 0.06),
-          ),
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
         ),
       ),
       child: Column(
@@ -357,10 +337,7 @@ class CartPage extends StatelessWidget {
             'Rp ${CartProvider.serviceFee.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
           ),
           const SizedBox(height: 12),
-          Container(
-            height: 1,
-            color: Colors.white.withValues(alpha: 0.08),
-          ),
+          Container(height: 1, color: Colors.white.withValues(alpha: 0.08)),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -388,9 +365,7 @@ class CartPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const CheckoutPage(),
-                ),
+                MaterialPageRoute(builder: (_) => const CheckoutPage()),
               );
             },
             child: Container(
@@ -429,13 +404,7 @@ class CartPage extends StatelessWidget {
   Widget _summaryRow(String label, String value) {
     return Row(
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.grey,
-            fontSize: 13,
-          ),
-        ),
+        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
         const Spacer(),
         Text(
           value,
@@ -457,9 +426,7 @@ class CartPage extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.delete_outline, color: deleteColor, size: 22),
@@ -481,10 +448,7 @@ class CartPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(
-              'Batal',
-              style: TextStyle(color: Colors.grey),
-            ),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -518,9 +482,7 @@ class CartPage extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.delete_outline, color: deleteColor, size: 22),
@@ -542,10 +504,7 @@ class CartPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(
-              'Batal',
-              style: TextStyle(color: Colors.grey),
-            ),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () {

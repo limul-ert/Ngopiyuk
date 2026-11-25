@@ -1,7 +1,8 @@
+
 class ChatMessage {
   final String id;
   final String text;
-  final bool isUser; // true = user, false = cafe
+  final bool isUser;
   final DateTime timestamp;
 
   ChatMessage({
@@ -11,19 +12,40 @@ class ChatMessage {
     required this.timestamp,
   });
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'text': text,
-    'isUser': isUser,
-    'timestamp': timestamp.toIso8601String(),
-  };
+  // Mengubah pesan menjadi Map untuk penyimpanan JSON.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'text': text,
+      'isUser': isUser,
+      'timestamp': timestamp.toIso8601String(),
+    };
+  }
 
+  // Membaca pesan dari JSON maupun data Firestore.
   static ChatMessage fromJson(Map<String, dynamic> json) {
+    final rawTimestamp = json['timestamp'];
+
+    DateTime parsedTimestamp;
+
+    if (rawTimestamp is DateTime) {
+      parsedTimestamp = rawTimestamp;
+    } else if (rawTimestamp is String) {
+      parsedTimestamp = DateTime.tryParse(rawTimestamp) ?? DateTime.now();
+    } else {
+      try {
+        // Mendukung Timestamp Firestore.
+        parsedTimestamp = rawTimestamp.toDate() as DateTime;
+      } catch (_) {
+        parsedTimestamp = DateTime.now();
+      }
+    }
+
     return ChatMessage(
-      id: json['id'],
-      text: json['text'],
-      isUser: json['isUser'],
-      timestamp: DateTime.parse(json['timestamp']),
+      id: json['id']?.toString() ?? '',
+      text: json['text']?.toString() ?? '',
+      isUser: json['isUser'] == true,
+      timestamp: parsedTimestamp,
     );
   }
 }

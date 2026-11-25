@@ -1,6 +1,8 @@
+
 import 'package:material_ui/material_ui.dart';
-import '../data/dummy_cafes.dart';
+
 import '../models/cafe.dart';
+import '../services/cafe_repository.dart';
 import '../widgets/cafe_image.dart';
 import '../widgets/mascot_empty.dart';
 import 'cafe_detail_page.dart';
@@ -21,19 +23,62 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _controller = TextEditingController();
+  final CafeRepository _cafeRepository = CafeRepository();
+
+  List<Cafe> _allCafes = [];
+
   String _query = '';
+  bool _isLoading = true;
+  String? _errorMessage;
 
   static const Color primaryColor = Color(0xFFC8956D);
   static const Color bgColor = Color(0xFF0F0F0F);
   static const Color cardColor = Color(0xFF1A1A1A);
 
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  // Mengambil data kafe dari Firestore.
+  Future<void> _loadData() async {
+    try {
+      final cafes = await _cafeRepository.getCafes();
+
+      if (!mounted) return;
+
+      setState(() {
+        _allCafes = cafes;
+        _isLoading = false;
+        _errorMessage = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Gagal memuat data kafe.';
+      });
+debugPrint('========== FIRESTORE ERROR ==========');
+debugPrint('Tipe error: ${e.runtimeType}');
+debugPrint('Detail error: $e');
+debugPrint('====================================');
+    }
+  }
+
+  // Mencari kafe berdasarkan nama, alamat, atau kategori.
   List<Cafe> get _results {
-    if (_query.trim().isEmpty) return dummyCafes;
-    final q = _query.toLowerCase();
-    return dummyCafes.where((cafe) {
+    final q = _query.trim().toLowerCase();
+
+    if (q.isEmpty) return _allCafes;
+
+    return _allCafes.where((cafe) {
       return cafe.name.toLowerCase().contains(q) ||
           cafe.address.toLowerCase().contains(q) ||
-          cafe.categories.any((cat) => cat.toLowerCase().contains(q));
+          cafe.categories.any(
+            (category) => category.toLowerCase().contains(q),
+          );
     }).toList();
   }
 
@@ -43,8 +88,9 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 
-  bool _isFavorite(String cafeName) =>
-      widget.favoriteCafeNames.contains(cafeName);
+  bool _isFavorite(String cafeName) {
+    return widget.favoriteCafeNames.contains(cafeName);
+  }
 
   void _onCafeTap(Cafe cafe) {
     Navigator.push(
@@ -56,7 +102,11 @@ class _SearchPageState extends State<SearchPage> {
           onToggleFavorite: () => widget.onToggleFavorite(cafe.name),
         ),
       ),
-    ).then((_) => setState(() {}));
+    ).then((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -97,8 +147,13 @@ class _SearchPageState extends State<SearchPage> {
                 child: TextField(
                   controller: _controller,
                   autofocus: true,
-                  onChanged: (val) => setState(() => _query = val),
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  onChanged: (val) {
+                    setState(() => _query = val);
+                  },
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Cari nama kafe, kategori, atau alamat...',
                     hintStyle: TextStyle(
@@ -112,26 +167,73 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                     suffixIcon: _query.isNotEmpty
                         ? IconButton(
-                      icon: const Icon(Icons.clear,
-                          color: Colors.grey, size: 20),
-                      onPressed: () {
-                        _controller.clear();
-                        setState(() => _query = '');
-                      },
-                    )
+                            icon: const Icon(
+                              Icons.clear,
+                              color: Colors.grey,
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              _controller.clear();
+                              setState(() => _query = '');
+                            },
+                          )
                         : null,
                     border: InputBorder.none,
-                    contentPadding:
-                    const EdgeInsets.symmetric(vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 14,
+                    ),
                   ),
                 ),
               ),
             ),
 
             Expanded(
-              child: results.isEmpty
-                  ? _buildEmptyState()
-                  : _buildResultList(results),
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: primaryColor,
+                      ),
+                    )
+                  : _errorMessage != null
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.wifi_off,
+                                color: Colors.grey,
+                                size: 40,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                _errorMessage!,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isLoading = true;
+                                    _errorMessage = null;
+                                  });
+                                  _loadData();
+                                },
+                                child: const Text(
+                                  'Coba Lagi',
+                                  style: TextStyle(
+                                    color: primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : results.isEmpty
+                          ? _buildEmptyState()
+                          : _buildResultList(results),
             ),
           ],
         ),
@@ -139,9 +241,7 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  // ============================================
-  // EMPTY STATE — pakai maskot penelusuran
-  // ============================================
+  // EMPTY STATE — maskot penelusuran.
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
@@ -150,14 +250,11 @@ class _SearchPageState extends State<SearchPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ← ✅ MASKOT PENELUSURAN (perbesar 280)
             const MascotEmpty(
               imagePath: 'assets/images/mascot/mascot_penelusuran.png',
               width: 300,
             ),
-
             const SizedBox(height: 28),
-
             const Text(
               'Kafe tidak ditemukan',
               textAlign: TextAlign.center,
@@ -191,7 +288,10 @@ class _SearchPageState extends State<SearchPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             '${results.length} kafe ditemukan',
-            style: const TextStyle(color: Colors.grey, fontSize: 12),
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 12,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -250,8 +350,11 @@ class _SearchPageState extends State<SearchPage> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.star,
-                          color: primaryColor, size: 14),
+                      const Icon(
+                        Icons.star,
+                        color: primaryColor,
+                        size: 14,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${cafe.rating}',
@@ -268,7 +371,9 @@ class _SearchPageState extends State<SearchPage> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                              color: Colors.grey, fontSize: 11),
+                            color: Colors.grey,
+                            fontSize: 11,
+                          ),
                         ),
                       ),
                     ],
@@ -276,8 +381,11 @@ class _SearchPageState extends State<SearchPage> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.location_on,
-                          color: Colors.grey, size: 12),
+                      const Icon(
+                        Icons.location_on,
+                        color: Colors.grey,
+                        size: 12,
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -285,7 +393,9 @@ class _SearchPageState extends State<SearchPage> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                              color: Colors.grey, fontSize: 11),
+                            color: Colors.grey,
+                            fontSize: 11,
+                          ),
                         ),
                       ),
                     ],

@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import '../models/order.dart';
 import 'main_page.dart'; // ← ✅ GANTI dari home_page
 
@@ -35,11 +36,7 @@ class OrderSuccessPage extends StatelessWidget {
                       width: 1.5,
                     ),
                   ),
-                  child: const Icon(
-                    Icons.check,
-                    color: primaryColor,
-                    size: 36,
-                  ),
+                  child: const Icon(Icons.check, color: primaryColor, size: 36),
                 ),
               ),
               const SizedBox(height: 32),
@@ -83,7 +80,7 @@ class OrderSuccessPage extends StatelessWidget {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (_) => const MainPage()),
-                        (route) => false,
+                    (route) => false,
                   );
                 },
                 child: Container(
@@ -125,9 +122,7 @@ class OrderSuccessPage extends StatelessWidget {
           // ===== SECTION: AMBIL DI =====
           Container(
             decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(color: primaryColor, width: 3),
-              ),
+              border: Border(left: BorderSide(color: primaryColor, width: 3)),
             ),
             padding: const EdgeInsets.fromLTRB(21, 20, 20, 20),
             child: Column(
@@ -242,7 +237,7 @@ class OrderSuccessPage extends StatelessWidget {
       child: Row(
         children: List.generate(
           40,
-              (index) => Expanded(
+          (index) => Expanded(
             child: Container(
               height: 1,
               color: index % 2 == 0 ? dividerColor : Colors.transparent,
@@ -254,12 +249,12 @@ class OrderSuccessPage extends StatelessWidget {
   }
 
   Widget _detailRow(
-      String label,
-      String value, {
-        bool isHighlight = false,
-        bool isTotal = false,
-        bool isPickup = false,
-      }) {
+    String label,
+    String value, {
+    bool isHighlight = false,
+    bool isTotal = false,
+    bool isPickup = false,
+  }) {
     Color valueColor;
     if (isHighlight || isPickup) {
       valueColor = primaryColor;

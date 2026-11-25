@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -16,13 +19,26 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _usernameController = TextEditingController();
+
+  // Controller password
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   final ImagePicker _imagePicker = ImagePicker();
 
   String _userAvatar = '😀';
   Uint8List? _avatarImageBytes;
 
+  bool _isLoading = true;
+  bool _isSaving = false;
+
+  bool _isSettingPassword = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+
   static const List<String> _avatarOptions = [
-    '😀', '😎', '🤓', '🥰', '😇', '🤠', '🧑', '👨', '👩', '🧔',
+    '😀', '😎', '🤓', '🥰', '😇',
+    '🤠', '🧑', '👨', '👩', '🧔',
   ];
 
   static const Color bgColor = Color(0xFF0A0A0A);
@@ -30,6 +46,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
   static const Color dividerColor = Color(0xFF252525);
   static const Color limeColor = Color(0xFFC7F464);
   static const Color deleteColor = Color(0xFFE53935);
+
+  User? get _currentUser => FirebaseAuth.instance.currentUser;
+  String get _uid => _currentUser?.uid ?? '';
+
+  String get _avatarKey => 'user_avatar_$_uid';
+  String get _avatarBase64Key => 'user_avatar_base64_$_uid';
+
+  // Periksa apakah akun sudah memiliki provider email/password.
+  bool get _hasPasswordProvider {
+    return _currentUser?.providerData.any(
+          (provider) => provider.providerId == 'password',
+        ) ??
+        false;
+  }
 
   @override
   void initState() {
@@ -43,70 +73,536 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _phoneController.dispose();
     _emailController.dispose();
     _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
+  // ============================================
+  // LOAD USER DATA
+  // ============================================
+
   Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
+    try {
+      final user = _currentUser;
 
-    final name = prefs.getString('user_name') ?? 'User';
-    final email = prefs.getString('user_email') ?? 'user@email.com';
-    final avatar = prefs.getString('user_avatar') ?? '😀';
-    final avatarBase64 = prefs.getString('user_avatar_base64');
-    final phone = prefs.getString('user_phone') ?? '0812-3456-7890';
-    final username = prefs.getString('user_username') ??
-        '@${name.toLowerCase().replaceAll(' ', '')}';
-
-    Uint8List? bytes;
-    if (avatarBase64 != null && avatarBase64.isNotEmpty) {
-      try {
-        bytes = base64Decode(avatarBase64);
-      } catch (_) {
-        bytes = null;
+      if (user == null) {
+        throw Exception('Silakan login terlebih dahulu.');
       }
-    }
 
-    setState(() {
-      _nameController.text = name;
-      _emailController.text = email;
-      _usernameController.text = username;
-      _phoneController.text = phone;
-      _userAvatar = avatar;
-      _avatarImageBytes = bytes;
-    });
+      final prefs = await SharedPreferences.getInstance();
+
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      final data = doc.data() ?? {};
+
+      final name = (data['name'] ??
+              prefs.getString('user_name') ??
+              'User')
+          .toString();
+
+      final email = user.email ?? '';
+
+      final username = (data['username'] ??
+              prefs.getString('user_username') ??
+              '@${name.toLowerCase().replaceAll(' ', '')}')
+          .toString();
+
+      final phone = (data['phone'] ??
+              prefs.getString('user_phone') ??
+              '')
+          .toString();
+
+      final firestoreAvatar = data['avatar']?.toString();
+      final firestoreAvatarBase64 =
+          data['avatarBase64']?.toString();
+
+      final avatar = firestoreAvatar ??
+          prefs.getString(_avatarKey) ??
+          prefs.getString('user_avatar') ??
+          '😀';
+
+      final avatarBase64 = firestoreAvatarBase64 ??
+          prefs.getString(_avatarBase64Key) ??
+          prefs.getString('user_avatar_base64');
+
+      Uint8List? bytes;
+
+      if (avatarBase64 != null && avatarBase64.isNotEmpty) {
+        try {
+          bytes = base64Decode(avatarBase64);
+        } catch (e) {
+          debugPrint('Gagal membaca avatar: $e');
+        }
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        _nameController.text = name;
+        _emailController.text = email;
+        _usernameController.text = username;
+        _phoneController.text = phone;
+        _userAvatar = avatar;
+        _avatarImageBytes = bytes;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Gagal memuat profil: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      _showSnackBar(
+        'Gagal memuat profil: $e',
+        Icons.error_outline,
+      );
+    }
   }
 
-  // ===== SAVE =====
+  // ============================================
+  // SAVE PROFILE
+  // ============================================
+
   Future<void> _saveChanges() async {
-    if (_nameController.text.trim().isEmpty) {
-      _showSnackBar('Nama tidak boleh kosong', Icons.warning_amber_rounded);
+    if (_isSaving) return;
+
+    final user = _currentUser;
+
+    if (user == null) {
+      _showSnackBar(
+        'Silakan login kembali.',
+        Icons.warning_amber_rounded,
+      );
       return;
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_name', _nameController.text.trim());
-    await prefs.setString('user_email', _emailController.text.trim());
-    await prefs.setString('user_username', _usernameController.text.trim());
-    await prefs.setString('user_phone', _phoneController.text.trim());
-    await prefs.setString('user_avatar', _userAvatar);
+    final name = _nameController.text.trim();
+    final username = _usernameController.text.trim();
+    final phone = _phoneController.text.trim();
 
-    if (_avatarImageBytes != null) {
-      final base64String = base64Encode(_avatarImageBytes!);
-      await prefs.setString('user_avatar_base64', base64String);
-    } else {
-      await prefs.remove('user_avatar_base64');
+    if (name.isEmpty) {
+      _showSnackBar(
+        'Nama tidak boleh kosong.',
+        Icons.warning_amber_rounded,
+      );
+      return;
     }
 
-    if (!mounted) return;
-    _showSnackBar('Profil berhasil diperbarui', Icons.check_circle);
+    setState(() {
+      _isSaving = true;
+    });
 
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (!mounted) return;
-    Navigator.pop(context, true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      final avatarBase64 = _avatarImageBytes != null
+          ? base64Encode(_avatarImageBytes!)
+          : null;
+
+      if (avatarBase64 != null &&
+          avatarBase64.length > 700000) {
+        throw Exception(
+          'Ukuran foto terlalu besar. Silakan pilih foto lain.',
+        );
+      }
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .set({
+        'uid': user.uid,
+        'name': name,
+        'email': user.email,
+        'username': username,
+        'phone': phone,
+        'avatar': _userAvatar,
+        'avatarBase64': avatarBase64,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      await prefs.setString(_avatarKey, _userAvatar);
+
+      if (avatarBase64 != null) {
+        await prefs.setString(
+          _avatarBase64Key,
+          avatarBase64,
+        );
+      } else {
+        await prefs.remove(_avatarBase64Key);
+      }
+
+      await prefs.setString('user_name', name);
+      await prefs.setString('user_email', user.email ?? '');
+      await prefs.setString('user_username', username);
+      await prefs.setString('user_phone', phone);
+      await prefs.setString('user_avatar', _userAvatar);
+
+      if (avatarBase64 != null) {
+        await prefs.setString(
+          'user_avatar_base64',
+          avatarBase64,
+        );
+      } else {
+        await prefs.remove('user_avatar_base64');
+      }
+
+      if (!mounted) return;
+
+      _showSnackBar(
+        'Profil berhasil diperbarui.',
+        Icons.check_circle,
+      );
+
+      await Future.delayed(
+        const Duration(milliseconds: 700),
+      );
+
+      if (!mounted) return;
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      debugPrint('Gagal menyimpan profil: $e');
+
+      if (!mounted) return;
+
+      _showSnackBar(
+        'Gagal menyimpan profil: $e',
+        Icons.error_outline,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
-  // ===== DELETE =====
+  // ============================================
+  // SET EMAIL AND PASSWORD
+  // ============================================
+
+  Future<void> _setEmailPassword() async {
+    if (_isSettingPassword) return;
+
+    final user = _currentUser;
+
+    if (user == null || user.email == null) {
+      _showSnackBar(
+        'Silakan login kembali.',
+        Icons.warning_amber_rounded,
+      );
+      return;
+    }
+
+    if (_hasPasswordProvider) {
+      _showSnackBar(
+        'Akun ini sudah memiliki password.',
+        Icons.info_outline,
+      );
+      return;
+    }
+
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    if (password.length < 6) {
+      _showSnackBar(
+        'Password minimal 6 karakter.',
+        Icons.warning_amber_rounded,
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      _showSnackBar(
+        'Konfirmasi password tidak cocok.',
+        Icons.warning_amber_rounded,
+      );
+      return;
+    }
+
+    setState(() {
+      _isSettingPassword = true;
+    });
+
+    try {
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: password,
+      );
+
+      // Hubungkan email/password ke akun Google yang sedang login.
+      // UID akun tetap sama.
+      await user.linkWithCredential(credential);
+
+      // Muat ulang informasi provider dari Firebase.
+      await FirebaseAuth.instance.currentUser?.reload();
+
+      if (!mounted) return;
+
+      _passwordController.clear();
+      _confirmPasswordController.clear();
+
+      setState(() {});
+
+      _showSnackBar(
+        'Password berhasil dibuat. Sekarang kamu bisa login dengan email dan password.',
+        Icons.check_circle,
+      );
+    } on FirebaseAuthException catch (e) {
+      String message;
+
+      switch (e.code) {
+        case 'provider-already-linked':
+          message = 'Akun ini sudah memiliki password.';
+          break;
+
+        case 'credential-already-in-use':
+        case 'email-already-in-use':
+          message =
+              'Email ini sudah terhubung dengan akun lain.';
+          break;
+
+        case 'weak-password':
+          message = 'Password terlalu lemah.';
+          break;
+
+        case 'requires-recent-login':
+          message =
+              'Silakan login ulang menggunakan Google, lalu coba kembali.';
+          break;
+
+        default:
+          message = e.message ?? 'Gagal membuat password.';
+      }
+
+      if (mounted) {
+        _showSnackBar(message, Icons.error_outline);
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar(
+          'Terjadi kesalahan: $e',
+          Icons.error_outline,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSettingPassword = false;
+        });
+      }
+    }
+  }
+
+  // ============================================
+  // PASSWORD SECTION
+  // ============================================
+
+  Widget _buildPasswordSection() {
+    if (_hasPasswordProvider) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: limeColor.withValues(alpha: 0.25),
+          ),
+        ),
+        child: const Row(
+          children: [
+            Icon(
+              Icons.check_circle,
+              color: limeColor,
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Akun sudah memiliki password. Kamu bisa login menggunakan email dan password.',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.05),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(
+                Icons.lock_outline,
+                color: limeColor,
+              ),
+              SizedBox(width: 10),
+              Text(
+                'Buat Password Login',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Buat password agar kamu bisa login menggunakan email dan password tanpa menekan tombol Google Login.',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          _buildPasswordField(
+            label: 'Password Baru',
+            controller: _passwordController,
+            obscure: _obscurePassword,
+            onToggle: () {
+              setState(() {
+                _obscurePassword = !_obscurePassword;
+              });
+            },
+          ),
+
+          const SizedBox(height: 12),
+
+          _buildPasswordField(
+            label: 'Konfirmasi Password',
+            controller: _confirmPasswordController,
+            obscure: _obscureConfirmPassword,
+            onToggle: () {
+              setState(() {
+                _obscureConfirmPassword =
+                    !_obscureConfirmPassword;
+              });
+            },
+          ),
+
+          const SizedBox(height: 18),
+
+          GestureDetector(
+            onTap: _isSettingPassword
+                ? null
+                : _setEmailPassword,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              decoration: BoxDecoration(
+                color: limeColor,
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Center(
+                child: _isSettingPassword
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.black,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Buat Password',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPasswordField({
+    required String label,
+    required TextEditingController controller,
+    required bool obscure,
+    required VoidCallback onToggle,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.grey,
+            fontSize: 12,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          obscureText: obscure,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+          ),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: bgColor,
+            hintText: 'Minimal 6 karakter',
+            hintStyle: const TextStyle(
+              color: Colors.grey,
+              fontSize: 12,
+            ),
+            suffixIcon: IconButton(
+              onPressed: onToggle,
+              icon: Icon(
+                obscure
+                    ? Icons.visibility_off
+                    : Icons.visibility,
+                color: Colors.grey,
+                size: 19,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 14,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ============================================
+  // DELETE ACCOUNT
+  // ============================================
+
   void _handleDeleteAccount() {
     showDialog(
       context: context,
@@ -117,8 +613,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ),
         title: const Row(
           children: [
-            Icon(Icons.warning_amber_rounded,
-                color: deleteColor, size: 22),
+            Icon(
+              Icons.warning_amber_rounded,
+              color: deleteColor,
+              size: 22,
+            ),
             SizedBox(width: 10),
             Text(
               'Hapus Akun',
@@ -132,7 +631,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ),
         content: const Text(
           'Yakin mau hapus akunmu? Tindakan ini tidak dapat dibatalkan.',
-          style: TextStyle(color: Colors.grey, fontSize: 14),
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 14,
+          ),
         ),
         actions: [
           TextButton(
@@ -164,8 +666,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
+  // ============================================
+  // SNACKBAR
+  // ============================================
+
   void _showSnackBar(String message, IconData icon) {
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).clearSnackBars();
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -195,19 +704,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   // ============================================
-  // BOTTOM SHEET: PILIH SUMBER AVATAR (FIXED)
+  // CHANGE AVATAR
   // ============================================
+
   Future<void> _changeAvatar() async {
     final choice = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: cardColor,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(24),
+        ),
       ),
       builder: (sheetContext) => Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(sheetContext).size.height * 0.85,
+          maxHeight:
+              MediaQuery.of(sheetContext).size.height * 0.85,
         ),
         child: SingleChildScrollView(
           child: Padding(
@@ -215,7 +728,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Handle bar
                 Container(
                   width: 40,
                   height: 4,
@@ -238,21 +750,24 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   icon: Icons.camera_alt_outlined,
                   title: 'Ambil dari Kamera',
                   subtitle: 'Foto langsung',
-                  onTap: () => Navigator.pop(sheetContext, 'camera'),
+                  onTap: () =>
+                      Navigator.pop(sheetContext, 'camera'),
                 ),
                 const SizedBox(height: 10),
                 _buildSheetOption(
                   icon: Icons.photo_library_outlined,
                   title: 'Pilih dari Galeri',
                   subtitle: 'Ambil dari penyimpanan',
-                  onTap: () => Navigator.pop(sheetContext, 'gallery'),
+                  onTap: () =>
+                      Navigator.pop(sheetContext, 'gallery'),
                 ),
                 const SizedBox(height: 10),
                 _buildSheetOption(
                   icon: Icons.emoji_emotions_outlined,
                   title: 'Pakai Emoji',
                   subtitle: 'Pilih emoji preset',
-                  onTap: () => Navigator.pop(sheetContext, 'emoji'),
+                  onTap: () =>
+                      Navigator.pop(sheetContext, 'emoji'),
                 ),
                 const SizedBox(height: 12),
               ],
@@ -273,7 +788,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
-  // ===== PICK IMAGE =====
+  // ============================================
+  // PICK IMAGE
+  // ============================================
+
   Future<void> _pickImage(ImageSource source) async {
     try {
       final XFile? picked = await _imagePicker.pickImage(
@@ -283,34 +801,48 @@ class _EditProfilePageState extends State<EditProfilePage> {
         maxHeight: 500,
       );
 
-      if (picked == null) return;
+      if (picked == null || !mounted) return;
 
       final bytes = await picked.readAsBytes();
+
+      if (!mounted) return;
 
       setState(() {
         _avatarImageBytes = bytes;
       });
 
-      _showSnackBar('Foto profil dipilih', Icons.check_circle);
+      _showSnackBar(
+        'Foto profil dipilih.',
+        Icons.check_circle,
+      );
     } catch (e) {
-      _showSnackBar('Gagal ambil foto: $e', Icons.error_outline);
+      if (!mounted) return;
+
+      _showSnackBar(
+        'Gagal mengambil foto: $e',
+        Icons.error_outline,
+      );
     }
   }
 
   // ============================================
-  // BOTTOM SHEET: PILIH EMOJI (FIXED)
+  // PICK EMOJI
   // ============================================
+
   Future<void> _pickEmoji() async {
     final selected = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: cardColor,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(24),
+        ),
       ),
       builder: (sheetContext) => Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(sheetContext).size.height * 0.85,
+          maxHeight:
+              MediaQuery.of(sheetContext).size.height * 0.85,
         ),
         child: SingleChildScrollView(
           child: Padding(
@@ -342,9 +874,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   alignment: WrapAlignment.center,
                   children: _avatarOptions.map((emoji) {
                     final isSelected =
-                        emoji == _userAvatar && _avatarImageBytes == null;
+                        emoji == _userAvatar &&
+                        _avatarImageBytes == null;
+
                     return GestureDetector(
-                      onTap: () => Navigator.pop(sheetContext, emoji),
+                      onTap: () =>
+                          Navigator.pop(sheetContext, emoji),
                       child: Container(
                         width: 60,
                         height: 60,
@@ -384,6 +919,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
       });
     }
   }
+
+  // ============================================
+  // BOTTOM SHEET OPTION
+  // ============================================
 
   Widget _buildSheetOption({
     required IconData icon,
@@ -448,6 +987,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
+  // ============================================
+  // BUILD
+  // ============================================
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -457,20 +1000,33 @@ class _EditProfilePageState extends State<EditProfilePage> {
           children: [
             _buildHeader(),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                child: Column(
-                  children: [
-                    _buildAvatarSection(),
-                    const SizedBox(height: 28),
-                    _buildFieldsGroup(),
-                    const SizedBox(height: 24),
-                    _buildSaveButton(),
-                    const SizedBox(height: 60),
-                    _buildDeleteButton(),
-                  ],
-                ),
-              ),
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: limeColor,
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        16, 8, 16, 24,
+                      ),
+                      child: Column(
+                        children: [
+                          _buildAvatarSection(),
+                          const SizedBox(height: 28),
+                          _buildFieldsGroup(),
+                          const SizedBox(height: 20),
+
+                          // Bagian membuat password
+                          _buildPasswordSection(),
+
+                          const SizedBox(height: 24),
+                          _buildSaveButton(),
+                          const SizedBox(height: 60),
+                          _buildDeleteButton(),
+                        ],
+                      ),
+                    ),
             ),
           ],
         ),
@@ -481,6 +1037,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   // ============================================
   // HEADER
   // ============================================
+
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
@@ -525,6 +1082,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   // ============================================
   // AVATAR SECTION
   // ============================================
+
   Widget _buildAvatarSection() {
     return Center(
       child: GestureDetector(
@@ -537,10 +1095,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               decoration: BoxDecoration(
                 color: const Color(0xFF3A2E22),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: limeColor,
-                  width: 2,
-                ),
+                border: Border.all(color: limeColor, width: 2),
                 boxShadow: [
                   BoxShadow(
                     color: limeColor.withValues(alpha: 0.2),
@@ -562,10 +1117,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 decoration: BoxDecoration(
                   color: limeColor,
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: bgColor,
-                    width: 3,
-                  ),
+                  border: Border.all(color: bgColor, width: 3),
                 ),
                 child: const Icon(
                   Icons.camera_alt,
@@ -591,6 +1143,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ),
       );
     }
+
     return Text(
       _userAvatar,
       style: const TextStyle(fontSize: 60),
@@ -600,6 +1153,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   // ============================================
   // FIELDS GROUP
   // ============================================
+
   Widget _buildFieldsGroup() {
     return Container(
       decoration: BoxDecoration(
@@ -623,6 +1177,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             'Email',
             _emailController,
             keyboardType: TextInputType.emailAddress,
+            readOnly: true,
           ),
           _buildDivider(),
           _buildFieldRow('Username', _usernameController),
@@ -643,12 +1198,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Widget _buildFieldRow(
-      String label,
-      TextEditingController controller, {
-        TextInputType keyboardType = TextInputType.text,
-      }) {
+    String label,
+    TextEditingController controller, {
+    TextInputType keyboardType = TextInputType.text,
+    bool readOnly = false,
+  }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 4,
+      ),
       child: Row(
         children: [
           SizedBox(
@@ -666,16 +1225,26 @@ class _EditProfilePageState extends State<EditProfilePage> {
             child: TextFormField(
               controller: controller,
               keyboardType: keyboardType,
+              readOnly: readOnly,
               textAlign: TextAlign.right,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: readOnly ? Colors.grey : Colors.white,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                ),
                 isDense: true,
+                suffixIcon: readOnly
+                    ? const Icon(
+                        Icons.lock_outline,
+                        size: 15,
+                        color: Colors.grey,
+                      )
+                    : null,
               ),
             ),
           ),
@@ -687,14 +1256,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
   // ============================================
   // SAVE BUTTON
   // ============================================
+
   Widget _buildSaveButton() {
     return GestureDetector(
-      onTap: _saveChanges,
+      onTap: _isSaving ? null : _saveChanges,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
-          color: limeColor,
+          color: _isSaving
+              ? limeColor.withValues(alpha: 0.6)
+              : limeColor,
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
@@ -704,15 +1276,24 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
           ],
         ),
-        child: const Center(
-          child: Text(
-            'Save Changes',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+        child: Center(
+          child: _isSaving
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    color: Colors.black,
+                    strokeWidth: 2,
+                  ),
+                )
+              : const Text(
+                  'Save Changes',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
         ),
       ),
     );
@@ -721,6 +1302,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   // ============================================
   // DELETE BUTTON
   // ============================================
+
   Widget _buildDeleteButton() {
     return GestureDetector(
       onTap: _handleDeleteAccount,

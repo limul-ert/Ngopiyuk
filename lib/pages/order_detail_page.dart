@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import '../models/order.dart';
 import '../widgets/cafe_image.dart';
 
@@ -23,11 +24,7 @@ class OrderDetailPage extends StatelessWidget {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                child: Column(
-                  children: [
-                    _buildTicketCard(),
-                  ],
-                ),
+                child: Column(children: [_buildTicketCard()]),
               ),
             ),
           ],
@@ -87,9 +84,7 @@ class OrderDetailPage extends StatelessWidget {
         children: [
           Container(
             decoration: const BoxDecoration(
-              border: Border(
-                left: BorderSide(color: primaryColor, width: 3),
-              ),
+              border: Border(left: BorderSide(color: primaryColor, width: 3)),
             ),
             padding: const EdgeInsets.fromLTRB(21, 20, 20, 20),
             child: Column(
@@ -202,79 +197,85 @@ class OrderDetailPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                ...order.items.map((item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: Row(
-                    children: [
-                      // ← ✅ CafeImage (support asset & network)
-                      CafeImage(
-                        source: item.item.imageUrl,
-                        width: 56,
-                        height: 56,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.item.name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                height: 1.4,
+                ...order.items.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: Row(
+                      children: [
+                        // ← ✅ CafeImage (support asset & network)
+                        CafeImage(
+                          source: item.item.imageUrl,
+                          width: 56,
+                          height: 56,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.item.name,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.4,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: primaryColor.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    '${item.quantity}x',
-                                    style: const TextStyle(
-                                      color: primaryColor,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: primaryColor.withValues(
+                                        alpha: 0.12,
+                                      ),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      '${item.quantity}x',
+                                      style: const TextStyle(
+                                        color: primaryColor,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '@ Rp ${item.item.price.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.5),
-                                    fontSize: 11,
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '@ Rp ${item.item.price.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                      fontSize: 11,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Rp ${item.subtotal.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
+                        const SizedBox(width: 8),
+                        Text(
+                          'Rp ${item.subtotal.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                )),
+                ),
               ],
             ),
           ),
@@ -333,7 +334,7 @@ class OrderDetailPage extends StatelessWidget {
       child: Row(
         children: List.generate(
           40,
-              (index) => Expanded(
+          (index) => Expanded(
             child: Container(
               height: 1,
               color: index % 2 == 0 ? dividerColor : Colors.transparent,
@@ -345,11 +346,11 @@ class OrderDetailPage extends StatelessWidget {
   }
 
   Widget _detailRow(
-      String label,
-      String value, {
-        bool isHighlight = false,
-        bool isPickup = false,
-      }) {
+    String label,
+    String value, {
+    bool isHighlight = false,
+    bool isPickup = false,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -421,8 +422,18 @@ class OrderDetailPage extends StatelessWidget {
 
   String _formatDate(DateTime dt) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
     ];
     final day = dt.day.toString().padLeft(2, '0');
     final month = months[dt.month - 1];

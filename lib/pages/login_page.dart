@@ -1,7 +1,9 @@
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'main_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../services/auth_service.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -18,6 +20,7 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _obscurePassword = true;
   bool _rememberMe = false;
+  bool _isLoading = false;
 
   static const Color primaryColor = Color(0xFFC8956D);
   static const Color bgColor = Color(0xFF0F0F0F);
@@ -34,46 +37,178 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // ============================================
-  // HANDLE LOGIN → LANGSUNG KE MAINPAGE
+  // HANDLE LOGIN EMAIL DAN PASSWORD
   // ============================================
+
   Future<void> _handleLogin() async {
     FocusScope.of(context).unfocus();
 
-    if (!_formKey.currentState!.validate()) return;
+    if (_isLoading) return;
 
-    final email = _emailController.text.trim();
-    final prefs = await SharedPreferences.getInstance();
-
-    final existingName = prefs.getString('user_name');
-    if (existingName == null || existingName.isEmpty) {
-      final namePart = email.split('@').first;
-      final name = namePart.isNotEmpty
-          ? '${namePart[0].toUpperCase()}${namePart.substring(1)}'
-          : 'User';
-      await prefs.setString('user_name', name);
+    if (!_formKey.currentState!.validate()) {
+      return;
     }
 
-    await prefs.setString('user_email', email);
-    await prefs.setBool('is_logged_in', true);
+    setState(() {
+      _isLoading = true;
+    });
 
-    if (!mounted) return;
+    try {
+      final credential = await AuthService().login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
 
-    // ← ✅ LANGSUNG KE MAINPAGE (skip loading)
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const MainPage()),
-    );
+      debugPrint('LOGIN BERHASIL');
+      debugPrint('UID: ${credential.user?.uid}');
+      debugPrint('EMAIL: ${credential.user?.email}');
+
+      // AuthGate akan mendeteksi perubahan status login
+      // dan membuka halaman utama secara otomatis.
+    } on FirebaseAuthException catch (e) {
+      String message;
+
+      switch (e.code) {
+        case 'user-not-found':
+          message = 'Akun dengan email tersebut tidak ditemukan.';
+          break;
+
+        case 'wrong-password':
+        case 'invalid-credential':
+          message = 'Email atau password salah.';
+          break;
+
+        case 'invalid-email':
+          message = 'Format email tidak valid.';
+          break;
+
+        case 'user-disabled':
+          message = 'Akun ini telah dinonaktifkan.';
+          break;
+
+        case 'too-many-requests':
+          message = 'Terlalu banyak percobaan. Coba lagi nanti.';
+          break;
+
+        case 'network-request-failed':
+          message = 'Koneksi internet bermasalah. Periksa jaringanmu.';
+          break;
+
+        default:
+          message = e.message ?? 'Login gagal. Silakan coba lagi.';
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: cardColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Terjadi kesalahan: $e'),
+          backgroundColor: cardColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
-  void _handleGoogleLogin() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Login dengan Google - Coming Soon'),
-        backgroundColor: cardColor,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+  // ============================================
+  // HANDLE LOGIN GOOGLE
+  // ============================================
+
+  Future<void> _handleGoogleLogin() async {
+    FocusScope.of(context).unfocus();
+
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final credential = await AuthService().signInWithGoogle();
+
+      debugPrint('LOGIN GOOGLE BERHASIL');
+      debugPrint('UID: ${credential.user?.uid}');
+      debugPrint('EMAIL: ${credential.user?.email}');
+      debugPrint('NAMA: ${credential.user?.displayName}');
+
+      // Tidak perlu Navigator.pushReplacement().
+      // AuthGate di main.dart akan mendeteksi perubahan
+      // status autentikasi dan membuka MainPage otomatis.
+    } on FirebaseAuthException catch (e) {
+      String message;
+
+      switch (e.code) {
+        case 'popup-closed-by-user':
+          message = 'Login Google dibatalkan.';
+          break;
+
+        case 'popup-blocked':
+          message =
+              'Popup diblokir browser. Izinkan popup untuk NgopiYuk.';
+          break;
+
+        case 'account-exists-with-different-credential':
+          message = 'Email sudah terdaftar dengan metode login lain.';
+          break;
+
+        case 'unauthorized-domain':
+          message = 'Domain aplikasi belum diizinkan di Firebase.';
+          break;
+
+        case 'operation-not-allowed':
+          message = 'Login Google belum diaktifkan di Firebase.';
+          break;
+
+        case 'network-request-failed':
+          message = 'Koneksi internet bermasalah.';
+          break;
+
+        default:
+          message = e.message ?? 'Login Google gagal. Silakan coba lagi.';
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: cardColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Terjadi kesalahan saat login Google: $e'),
+          backgroundColor: cardColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -90,15 +225,19 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // ============================================
-  // DESKTOP
+  // DESKTOP LAYOUT
   // ============================================
+
   Widget _buildDesktopLayout() {
     return Row(
       children: [
         Expanded(
           flex: 5,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 60,
+              vertical: 40,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -150,7 +289,9 @@ class _LoginPageState extends State<LoginPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+
                 const SizedBox(height: 8),
+
                 const Text(
                   'Login dulu buat mulai jelajah cafe terbaik di Madiun',
                   style: TextStyle(
@@ -167,36 +308,41 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
+
         Expanded(
           flex: 4,
           child: ClipRRect(
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // ✅ DIUBAH: Image.network → CachedNetworkImage
                 CachedNetworkImage(
                   imageUrl:
                       'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200&q=80',
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(color: cardColor),
-                  errorWidget: (context, url, error) => Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          primaryColor.withValues(alpha: 0.4),
-                          bgColor,
-                        ],
+                  placeholder: (context, url) {
+                    return Container(color: cardColor);
+                  },
+                  errorWidget: (context, url, error) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            primaryColor.withValues(alpha: 0.4),
+                            bgColor,
+                          ],
+                        ),
                       ),
-                    ),
-                    child: const Icon(
-                      Icons.coffee,
-                      color: primaryColor,
-                      size: 80,
-                    ),
-                  ),
+                      child: const Icon(
+                        Icons.coffee,
+                        color: primaryColor,
+                        size: 80,
+                      ),
+                    );
+                  },
                 ),
+
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -218,8 +364,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // ============================================
-  // MOBILE
+  // MOBILE LAYOUT
   // ============================================
+
   Widget _buildMobileLayout() {
     return Stack(
       children: [
@@ -235,16 +382,21 @@ class _LoginPageState extends State<LoginPage> {
                 imageUrl:
                     'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80',
                 fit: BoxFit.cover,
-                placeholder: (context, url) => Container(color: cardColor),
-                errorWidget: (context, url, error) => Container(
-                  color: cardColor,
-                  child: const Icon(
-                    Icons.coffee,
-                    color: primaryColor,
-                    size: 60,
-                  ),
-                ),
+                placeholder: (context, url) {
+                  return Container(color: cardColor);
+                },
+                errorWidget: (context, url, error) {
+                  return Container(
+                    color: cardColor,
+                    child: const Icon(
+                      Icons.coffee,
+                      color: primaryColor,
+                      size: 60,
+                    ),
+                  );
+                },
               ),
+
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -258,6 +410,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+
               Center(
                 child: Container(
                   width: 100,
@@ -308,7 +461,9 @@ class _LoginPageState extends State<LoginPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+
                     const SizedBox(height: 6),
+
                     const Text(
                       'Login dulu buat mulai jelajah cafe terbaik di Madiun',
                       style: TextStyle(
@@ -317,7 +472,9 @@ class _LoginPageState extends State<LoginPage> {
                         height: 1.5,
                       ),
                     ),
+
                     const SizedBox(height: 28),
+
                     _buildFormSection(),
                   ],
                 ),
@@ -332,12 +489,14 @@ class _LoginPageState extends State<LoginPage> {
   // ============================================
   // FORM SECTION
   // ============================================
+
   Widget _buildFormSection() {
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // EMAIL
           _buildInputField(
             controller: _emailController,
             label: 'Email',
@@ -348,14 +507,18 @@ class _LoginPageState extends State<LoginPage> {
               if (val == null || val.trim().isEmpty) {
                 return 'Email tidak boleh kosong';
               }
+
               if (!val.contains('@')) {
                 return 'Format email tidak valid';
               }
+
               return null;
             },
           ),
+
           const SizedBox(height: 16),
 
+          // PASSWORD
           _buildInputField(
             controller: _passwordController,
             label: 'Password',
@@ -366,9 +529,11 @@ class _LoginPageState extends State<LoginPage> {
               if (val == null || val.isEmpty) {
                 return 'Password tidak boleh kosong';
               }
+
               if (val.length < 6) {
                 return 'Password minimal 6 karakter';
               }
+
               return null;
             },
             suffixIcon: IconButton(
@@ -380,12 +545,16 @@ class _LoginPageState extends State<LoginPage> {
                 size: 20,
               ),
               onPressed: () {
-                setState(() => _obscurePassword = !_obscurePassword);
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
               },
             ),
           ),
+
           const SizedBox(height: 12),
 
+          // REMEMBER ME DAN FORGOT PASSWORD
           Row(
             children: [
               SizedBox(
@@ -394,28 +563,41 @@ class _LoginPageState extends State<LoginPage> {
                 child: Checkbox(
                   value: _rememberMe,
                   onChanged: (val) {
-                    setState(() => _rememberMe = val ?? false);
+                    setState(() {
+                      _rememberMe = val ?? false;
+                    });
                   },
                   activeColor: primaryColor,
                   checkColor: Colors.black,
-                  side: const BorderSide(color: Colors.grey, width: 1.2),
+                  side: const BorderSide(
+                    color: Colors.grey,
+                    width: 1.2,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
                   ),
                 ),
               ),
+
               const SizedBox(width: 8),
+
               const Text(
                 'Remember me',
-                style: TextStyle(color: Colors.grey, fontSize: 13),
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 13,
+                ),
               ),
+
               const Spacer(),
+
               TextButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content:
-                          const Text('Fitur Lupa Password - Coming Soon'),
+                      content: const Text(
+                        'Fitur Lupa Password - Coming Soon',
+                      ),
                       backgroundColor: cardColor,
                       behavior: SnackBarBehavior.floating,
                       duration: const Duration(seconds: 2),
@@ -428,17 +610,22 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 child: const Text(
                   'Forgot password?',
-                  style: TextStyle(color: primaryColor, fontSize: 12),
+                  style: TextStyle(
+                    color: primaryColor,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ],
           ),
+
           const SizedBox(height: 20),
 
+          // TOMBOL LOGIN EMAIL
           SizedBox(
             height: 54,
             child: ElevatedButton(
-              onPressed: _handleLogin,
+              onPressed: _isLoading ? null : _handleLogin,
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.black,
@@ -447,18 +634,31 @@ class _LoginPageState extends State<LoginPage> {
                   borderRadius: BorderRadius.circular(27),
                 ),
               ),
-              child: const Text(
-                'Login',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.black,
+                        ),
+                      ),
+                    )
+                  : const Text(
+                      'Login',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
             ),
           ),
+
           const SizedBox(height: 24),
 
+          // PEMBATAS
           Row(
             children: [
               Expanded(
@@ -468,6 +668,7 @@ class _LoginPageState extends State<LoginPage> {
                   thickness: 1,
                 ),
               ),
+
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
@@ -478,6 +679,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+
               Expanded(
                 child: Divider(
                   color: Colors.white.withValues(alpha: 0.1),
@@ -487,12 +689,14 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ],
           ),
+
           const SizedBox(height: 20),
 
+          // GOOGLE LOGIN
           SizedBox(
             height: 52,
             child: OutlinedButton(
-              onPressed: _handleGoogleLogin,
+              onPressed: _isLoading ? null : _handleGoogleLogin,
               style: OutlinedButton.styleFrom(
                 side: BorderSide(
                   color: Colors.white.withValues(alpha: 0.1),
@@ -503,49 +707,68 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 backgroundColor: cardColor,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 22,
-                    height: 22,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                    child: const Text(
-                      'G',
-                      style: TextStyle(
-                        color: Color(0xFF4285F4),
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Roboto',
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          primaryColor,
+                        ),
                       ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 22,
+                          height: 22,
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                          child: const Text(
+                            'G',
+                            style: TextStyle(
+                              color: Color(0xFF4285F4),
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Roboto',
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        const Text(
+                          'Sign in with Google',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Sign in with Google',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
+
           const SizedBox(height: 24),
 
+          // NAVIGASI KE REGISTER
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
                 "Don't have an account? ",
-                style: TextStyle(color: Colors.grey, fontSize: 13),
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 13,
+                ),
               ),
+
               GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -571,6 +794,10 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // ============================================
+  // INPUT FIELD
+  // ============================================
+
   Widget _buildInputField({
     required TextEditingController controller,
     required String label,
@@ -586,14 +813,21 @@ class _LoginPageState extends State<LoginPage> {
       obscureText: obscureText,
       keyboardType: keyboardType,
       validator: validator,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 14,
+      ),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(
           color: Colors.white.withValues(alpha: 0.3),
           fontSize: 14,
         ),
-        prefixIcon: Icon(icon, color: Colors.grey, size: 20),
+        prefixIcon: Icon(
+          icon,
+          color: Colors.grey,
+          size: 20,
+        ),
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: cardColor,
@@ -614,15 +848,24 @@ class _LoginPageState extends State<LoginPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(28),
-          borderSide: const BorderSide(color: primaryColor, width: 1.5),
+          borderSide: const BorderSide(
+            color: primaryColor,
+            width: 1.5,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(28),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1),
+          borderSide: const BorderSide(
+            color: Colors.redAccent,
+            width: 1,
+          ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(28),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+          borderSide: const BorderSide(
+            color: Colors.redAccent,
+            width: 1.5,
+          ),
         ),
         errorStyle: const TextStyle(
           color: Colors.redAccent,

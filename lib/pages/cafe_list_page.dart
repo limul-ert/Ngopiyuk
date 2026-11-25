@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import '../models/cafe.dart';
 import '../widgets/cafe_card.dart';
 import 'cafe_detail_page.dart';
@@ -107,10 +108,7 @@ class _CafeListPageState extends State<CafeListPage> {
                 children: [
                   Text(
                     '${widget.cafes.length} cafe ditemukan',
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
                   // Dropdown Sortir
                   DropdownButton<int>(
@@ -118,7 +116,11 @@ class _CafeListPageState extends State<CafeListPage> {
                     dropdownColor: cardColor,
                     icon: const Icon(Icons.sort, color: primaryColor, size: 20),
                     underline: const SizedBox(),
-                    style: const TextStyle(color: primaryColor, fontSize: 12, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: primaryColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                     onChanged: (int? newValue) {
                       if (newValue != null) {
                         setState(() => _sortBy = newValue);
@@ -126,7 +128,10 @@ class _CafeListPageState extends State<CafeListPage> {
                     },
                     items: const [
                       DropdownMenuItem(value: 0, child: Text('Default')),
-                      DropdownMenuItem(value: 1, child: Text('Rating Tertinggi')),
+                      DropdownMenuItem(
+                        value: 1,
+                        child: Text('Rating Tertinggi'),
+                      ),
                       DropdownMenuItem(value: 2, child: Text('Nama A-Z')),
                     ],
                   ),
@@ -140,16 +145,16 @@ class _CafeListPageState extends State<CafeListPage> {
               child: widget.cafes.isEmpty
                   ? _buildEmptyState()
                   : ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _sortedCafes.length,
-                itemBuilder: (context, index) {
-                  final cafe = _sortedCafes[index];
-                  return CafeCardVertical(
-                    cafe: cafe,
-                    onTap: () => _onCafeTap(cafe),
-                  );
-                },
-              ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: _sortedCafes.length,
+                      itemBuilder: (context, index) {
+                        final cafe = _sortedCafes[index];
+                        return CafeCardVertical(
+                          cafe: cafe,
+                          onTap: () => _onCafeTap(cafe),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

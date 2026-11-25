@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import '../models/cafe.dart';
 import 'cafe_image.dart';
 
@@ -25,9 +26,7 @@ class CafeCardHorizontal extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A1A),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.05),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,8 +80,11 @@ class CafeCardHorizontal extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.star,
-                          color: Color(0xFFC8956D), size: 14),
+                      const Icon(
+                        Icons.star,
+                        color: Color(0xFFC8956D),
+                        size: 14,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         cafe.rating.toString(),
@@ -123,11 +125,7 @@ class CafeCardVertical extends StatelessWidget {
   final Cafe cafe;
   final VoidCallback onTap;
 
-  const CafeCardVertical({
-    super.key,
-    required this.cafe,
-    required this.onTap,
-  });
+  const CafeCardVertical({super.key, required this.cafe, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -139,19 +137,13 @@ class CafeCardVertical extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A1A),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.05),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: Row(
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: CafeImage(
-                source: cafe.imageUrl,
-                width: 80,
-                height: 80,
-              ),
+              child: CafeImage(source: cafe.imageUrl, width: 80, height: 80),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -172,8 +164,11 @@ class CafeCardVertical extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.star,
-                          color: Color(0xFFC8956D), size: 14),
+                      const Icon(
+                        Icons.star,
+                        color: Color(0xFFC8956D),
+                        size: 14,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         cafe.rating.toString(),
@@ -196,8 +191,11 @@ class CafeCardVertical extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.access_time,
-                          color: Colors.grey, size: 12),
+                      const Icon(
+                        Icons.access_time,
+                        color: Colors.grey,
+                        size: 12,
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -215,8 +213,11 @@ class CafeCardVertical extends StatelessWidget {
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      const Icon(Icons.location_on,
-                          color: Colors.grey, size: 12),
+                      const Icon(
+                        Icons.location_on,
+                        color: Colors.grey,
+                        size: 12,
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(

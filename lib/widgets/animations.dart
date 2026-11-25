@@ -34,10 +34,7 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    );
+    _controller = AnimationController(vsync: this, duration: widget.duration);
 
     final curve = CurvedAnimation(
       parent: _controller,
@@ -69,10 +66,7 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _opacity,
-      child: SlideTransition(
-        position: _offset,
-        child: widget.child,
-      ),
+      child: SlideTransition(position: _offset, child: widget.child),
     );
   }
 }
@@ -87,11 +81,7 @@ class PressableCard extends StatefulWidget {
   final Widget child;
   final double pressScale;
 
-  const PressableCard({
-    super.key,
-    required this.child,
-    this.pressScale = 0.97,
-  });
+  const PressableCard({super.key, required this.child, this.pressScale = 0.97});
 
   @override
   State<PressableCard> createState() => _PressableCardState();

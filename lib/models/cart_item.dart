@@ -5,11 +5,7 @@ class CartItem {
   final String cafeName;
   int quantity;
 
-  CartItem({
-    required this.item,
-    required this.cafeName,
-    this.quantity = 1,
-  });
+  CartItem({required this.item, required this.cafeName, this.quantity = 1});
 
   int get subtotal => item.price * quantity;
 

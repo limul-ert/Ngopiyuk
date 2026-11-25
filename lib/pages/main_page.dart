@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import 'home_page.dart';
 import 'order_history_page.dart';
 import 'profile_page.dart';
@@ -45,12 +46,7 @@ class _MainPageState extends State<MainPage> {
           ),
 
           // ===== FLOATING NAV (overlay) =====
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildFloatingNav(),
-          ),
+          Positioned(left: 0, right: 0, bottom: 0, child: _buildFloatingNav()),
         ],
       ),
     );
@@ -69,10 +65,7 @@ class _MainPageState extends State<MainPage> {
           decoration: BoxDecoration(
             color: cardColor,
             borderRadius: BorderRadius.circular(36), // ← full rounded (pill)
-            border: Border.all(
-              color: dividerColor,
-              width: 1,
-            ),
+            border: Border.all(color: dividerColor, width: 1),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.4),
@@ -84,24 +77,14 @@ class _MainPageState extends State<MainPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildNavItem(
-                0,
-                Icons.home_outlined,
-                Icons.home,
-                'Beranda',
-              ),
+              _buildNavItem(0, Icons.home_outlined, Icons.home, 'Beranda'),
               _buildNavItem(
                 1,
                 Icons.receipt_long_outlined,
                 Icons.receipt_long,
                 'Riwayat',
               ),
-              _buildNavItem(
-                2,
-                Icons.person_outline,
-                Icons.person,
-                'Profil',
-              ),
+              _buildNavItem(2, Icons.person_outline, Icons.person, 'Profil'),
             ],
           ),
         ),
@@ -113,11 +96,11 @@ class _MainPageState extends State<MainPage> {
   // NAV ITEM
   // ============================================
   Widget _buildNavItem(
-      int index,
-      IconData icon,
-      IconData activeIcon,
-      String label,
-      ) {
+    int index,
+    IconData icon,
+    IconData activeIcon,
+    String label,
+  ) {
     final isActive = _currentIndex == index;
 
     return GestureDetector(
@@ -143,10 +126,7 @@ class _MainPageState extends State<MainPage> {
               transitionBuilder: (child, animation) {
                 return ScaleTransition(
                   scale: animation,
-                  child: FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  ),
+                  child: FadeTransition(opacity: animation, child: child),
                 );
               },
               child: Icon(

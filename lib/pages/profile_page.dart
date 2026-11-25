@@ -1,8 +1,12 @@
+
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'login_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../services/auth_service.dart';
 import 'edit_profile_page.dart';
 import 'info_pages.dart';
 
@@ -20,6 +24,8 @@ class _ProfilePageState extends State<ProfilePage> {
   Uint8List? _avatarImageBytes;
 
   bool _pauseNotifications = true;
+  bool _isLoggingOut = false;
+  bool _isLoading = true;
 
   static const Color bgColor = Color(0xFF0F0F0F);
   static const Color cardColor = Color(0xFF181818);
@@ -28,108 +34,264 @@ class _ProfilePageState extends State<ProfilePage> {
   static const Color toggleInactiveTrack = Color(0xFF2A2A2A);
   static const Color logoutTextColor = Color(0xFFE53935);
 
+  String get _uid => AuthService().currentUser?.uid ?? '';
+
+  String get _avatarKey => 'user_avatar_$_uid';
+  String get _avatarBase64Key => 'user_avatar_base64_$_uid';
+  String get _notificationKey => 'pause_notifications_$_uid';
+
   @override
   void initState() {
     super.initState();
     _loadUserData();
   }
 
-  Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
+  // ============================================
+  // LOAD USER DATA
+  // ============================================
 
-    final avatarBase64 = prefs.getString('user_avatar_base64');
-    Uint8List? bytes;
-    if (avatarBase64 != null && avatarBase64.isNotEmpty) {
-      try {
-        bytes = base64Decode(avatarBase64);
-      } catch (_) {
-        bytes = null;
+  Future<void> _loadUserData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final currentUser = AuthService().currentUser;
+
+      String name = 'User';
+      String email = currentUser?.email ?? 'user@email.com';
+
+      String? firestoreAvatar;
+      String? firestoreAvatarBase64;
+
+      if (currentUser != null) {
+        try {
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(currentUser.uid)
+              .get();
+
+          if (userDoc.exists) {
+            final userData = userDoc.data();
+
+            name = userData?['name']?.toString() ?? 'User';
+
+            email = currentUser.email ??
+                userData?['email']?.toString() ??
+                email;
+
+            firestoreAvatar =
+                userData?['avatar']?.toString();
+
+            firestoreAvatarBase64 =
+                userData?['avatarBase64']?.toString();
+          }
+        } catch (e) {
+          debugPrint('Gagal mengambil data profil Firestore: $e');
+        }
       }
+
+      // Prioritaskan avatar dari Firestore.
+      final avatar = firestoreAvatar ??
+          prefs.getString(_avatarKey) ??
+          prefs.getString('user_avatar') ??
+          '😀';
+
+      final avatarBase64 = firestoreAvatarBase64 ??
+          prefs.getString(_avatarBase64Key) ??
+          prefs.getString('user_avatar_base64');
+
+      Uint8List? bytes;
+
+      if (avatarBase64 != null && avatarBase64.isNotEmpty) {
+        try {
+          bytes = base64Decode(avatarBase64);
+        } catch (e) {
+          debugPrint('Gagal membaca avatar Base64: $e');
+        }
+      }
+
+      // Pengaturan notifikasi berdasarkan UID.
+      final pauseNotifications =
+          prefs.getBool(_notificationKey) ?? true;
+
+      if (!mounted) return;
+
+      setState(() {
+        _userName = name;
+        _userEmail = email;
+        _userAvatar = avatar;
+        _avatarImageBytes = bytes;
+        _pauseNotifications = pauseNotifications;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Gagal memuat profil: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
     }
+  }
+
+  // ============================================
+  // SAVE NOTIFICATION SETTING
+  // ============================================
+
+  Future<void> _updateNotificationSetting(bool value) async {
+    if (_uid.isEmpty) return;
 
     setState(() {
-      _userName = prefs.getString('user_name') ?? 'User';
-      _userEmail = prefs.getString('user_email') ?? 'user@email.com';
-      _userAvatar = prefs.getString('user_avatar') ?? '😀';
-      _avatarImageBytes = bytes;
+      _pauseNotifications = value;
     });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      await prefs.setBool(_notificationKey, value);
+
+      debugPrint(
+        'Pengaturan notifikasi berhasil disimpan: $value',
+      );
+    } catch (e) {
+      debugPrint('Gagal menyimpan pengaturan notifikasi: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        _pauseNotifications = !value;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal menyimpan pengaturan: $e'),
+          backgroundColor: cardColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
+
+  // ============================================
+  // EDIT PROFILE
+  // ============================================
 
   Future<void> _openEditProfile() async {
     final updated = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (_) => const EditProfilePage()),
+      MaterialPageRoute(
+        builder: (_) => const EditProfilePage(),
+      ),
     );
-    if (updated == true) {
-      _loadUserData();
+
+    if (updated == true && mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      await _loadUserData();
     }
   }
 
-  void _handleLogout() {
-    showDialog(
+  // ============================================
+  // LOGOUT
+  // ============================================
+
+  Future<void> _handleLogout() async {
+    if (_isLoggingOut) return;
+
+    final shouldLogout = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.logout, color: logoutTextColor, size: 22),
-            SizedBox(width: 10),
-            Text(
-              'Keluar',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Row(
+            children: [
+              Icon(
+                Icons.logout,
+                color: logoutTextColor,
+                size: 22,
               ),
+              SizedBox(width: 10),
+              Text(
+                'Keluar',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Yakin mau keluar dari akunmu?',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: const Text(
+                'Batal',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: logoutTextColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Text('Keluar'),
             ),
           ],
-        ),
-        content: const Text(
-          'Yakin mau keluar dari akunmu?',
-          style: TextStyle(color: Colors.grey, fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(
-              'Batal',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              // PERBAIKAN: Tutup dialog terlebih dahulu sebelum proses async
-              Navigator.pop(dialogContext);
-              
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('is_logged_in', false);
-              
-              // PERBAIKAN: Cek mounted sebelum menggunakan context state untuk navigasi
-              if (!mounted) return;
-              
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginPage()),
-                (route) => false,
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: logoutTextColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: const Text('Keluar'),
-          ),
-        ],
-      ),
+        );
+      },
     );
+
+    if (shouldLogout != true || !mounted) return;
+
+    setState(() {
+      _isLoggingOut = true;
+    });
+
+    try {
+      await AuthService().logout();
+
+      debugPrint('LOGOUT BERHASIL');
+    } catch (e) {
+      debugPrint('LOGOUT ERROR: $e');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal logout: $e'),
+          backgroundColor: cardColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      setState(() {
+        _isLoggingOut = false;
+      });
+    }
   }
+
+  // ============================================
+  // BUILD
+  // ============================================
 
   @override
   Widget build(BuildContext context) {
@@ -142,88 +304,97 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             _buildHeader(canPop),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
-                child: Column(
-                  children: [
-                    _buildProfileCard(),
-                    const SizedBox(height: 18),
-
-                    _buildGroup([
-                      _buildSwitchTile(
-                        icon: Icons.notifications_none,
-                        title: 'Jeda Notifikasi',
-                        value: _pauseNotifications,
-                        onChanged: (val) {
-                          setState(() => _pauseNotifications = val);
-                        },
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: toggleActiveColor,
                       ),
-                      _buildArrowTile(
-                        icon: Icons.people_outline,
-                        title: 'Kontak Saya',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const ContactPage(),
+                    )
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        16,
+                        8,
+                        16,
+                        120,
+                      ),
+                      child: Column(
+                        children: [
+                          _buildProfileCard(),
+                          const SizedBox(height: 18),
+                          _buildGroup([
+                            _buildSwitchTile(
+                              icon: Icons.notifications_none,
+                              title: 'Jeda Notifikasi',
+                              value: _pauseNotifications,
+                              onChanged: _updateNotificationSetting,
                             ),
-                          );
-                        },
-                      ),
-                    ]),
-
-                    const SizedBox(height: 14),
-
-                    _buildGroup([
-                      _buildArrowTile(
-                        icon: Icons.info_outline,
-                        title: 'Tentang Aplikasi',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const AboutAppPage(),
+                            _buildArrowTile(
+                              icon: Icons.people_outline,
+                              title: 'Kontak Saya',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const ContactPage(),
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
-                      _buildArrowTile(
-                        icon: Icons.description_outlined,
-                        title: 'Syarat & Ketentuan',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const TermsPage(),
+                          ]),
+                          const SizedBox(height: 14),
+                          _buildGroup([
+                            _buildArrowTile(
+                              icon: Icons.info_outline,
+                              title: 'Tentang Aplikasi',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const AboutAppPage(),
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
-                      _buildArrowTile(
-                        icon: Icons.privacy_tip_outlined,
-                        title: 'Kebijakan Privasi',
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const PrivacyPolicyPage(),
+                            _buildArrowTile(
+                              icon: Icons.description_outlined,
+                              title: 'Syarat & Ketentuan',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const TermsPage(),
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
+                            _buildArrowTile(
+                              icon: Icons.privacy_tip_outlined,
+                              title: 'Kebijakan Privasi',
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const PrivacyPolicyPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ]),
+                          const SizedBox(height: 20),
+                          _buildLogoutButton(),
+                        ],
                       ),
-                    ]),
-
-                    const SizedBox(height: 20),
-                    _buildLogoutButton(),
-                  ],
-                ),
-              ),
+                    ),
             ),
           ],
         ),
       ),
     );
   }
+
+  // ============================================
+  // HEADER
+  // ============================================
 
   Widget _buildHeader(bool canPop) {
     return Padding(
@@ -268,6 +439,10 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+
+  // ============================================
+  // PROFILE CARD
+  // ============================================
 
   Widget _buildProfileCard() {
     return GestureDetector(
@@ -356,11 +531,16 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       );
     }
+
     return Text(
       _userAvatar,
       style: const TextStyle(fontSize: 26),
     );
   }
+
+  // ============================================
+  // GROUP
+  // ============================================
 
   Widget _buildGroup(List<Widget> children) {
     return Container(
@@ -390,6 +570,10 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  // ============================================
+  // SWITCH TILE
+  // ============================================
+
   Widget _buildSwitchTile({
     required IconData icon,
     required String title,
@@ -397,10 +581,17 @@ class _ProfilePageState extends State<ProfilePage> {
     required ValueChanged<bool> onChanged,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 4,
+      ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.grey, size: 20),
+          Icon(
+            icon,
+            color: Colors.grey,
+            size: 20,
+          ),
           const SizedBox(width: 14),
           Expanded(
             child: Text(
@@ -421,13 +612,18 @@ class _ProfilePageState extends State<ProfilePage> {
               activeTrackColor: toggleActiveColor,
               inactiveThumbColor: Colors.white,
               inactiveTrackColor: toggleInactiveTrack,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              materialTapTargetSize:
+                  MaterialTapTargetSize.shrinkWrap,
             ),
           ),
         ],
       ),
     );
   }
+
+  // ============================================
+  // ARROW TILE
+  // ============================================
 
   Widget _buildArrowTile({
     required IconData icon,
@@ -438,10 +634,17 @@ class _ProfilePageState extends State<ProfilePage> {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 16,
+        ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.grey, size: 20),
+            Icon(
+              icon,
+              color: Colors.grey,
+              size: 20,
+            ),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
@@ -468,9 +671,13 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  // ============================================
+  // LOGOUT BUTTON
+  // ============================================
+
   Widget _buildLogoutButton() {
     return GestureDetector(
-      onTap: _handleLogout,
+      onTap: _isLoggingOut ? null : _handleLogout,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 18),
@@ -478,18 +685,28 @@ class _ProfilePageState extends State<ProfilePage> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(30),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.logout,
-              color: logoutTextColor,
-              size: 20,
-            ),
-            SizedBox(width: 10),
+            if (_isLoggingOut)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: logoutTextColor,
+                ),
+              )
+            else
+              const Icon(
+                Icons.logout,
+                color: logoutTextColor,
+                size: 20,
+              ),
+            const SizedBox(width: 10),
             Text(
-              'Keluar',
-              style: TextStyle(
+              _isLoggingOut ? 'Sedang keluar...' : 'Keluar',
+              style: const TextStyle(
                 color: logoutTextColor,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
