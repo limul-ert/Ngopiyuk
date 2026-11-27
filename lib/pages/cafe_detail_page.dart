@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../models/cafe.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/cafe_image.dart';
+import '../widgets/cafe_reviews_section.dart';
 import '../services/spoonacular_service.dart';
 import 'cart_page.dart';
 import 'chat_page.dart';
@@ -34,6 +36,20 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
 
   late bool _isFavorite;
   int _selectedTabIndex = 0;
+
+  // Nilai rating terbaru dari Firestore (dipakai juga untuk fitur bagikan).
+  double? _latestRating;
+  int? _latestReviewCount;
+
+  // Dokumen kafe di Firestore (sama dengan yang dipakai CafeReviewsSection).
+  DocumentReference<Map<String, dynamic>> get _cafeRef {
+    final cafe = widget.cafe;
+    final docId = (cafe.id != null && cafe.id!.isNotEmpty)
+        ? cafe.id!
+        : Uri.encodeComponent(cafe.name);
+
+    return FirebaseFirestore.instance.collection('cafes').doc(docId);
+  }
 
   final List<String> _allCategories = ['Minuman', 'Makanan', 'Snack'];
 
@@ -110,7 +126,7 @@ class _CafeDetailPageState extends State<CafeDetailPage> {
     final shareText = '''
 ☕ Yuk kunjungi ${cafe.name}!
 
-⭐ Rating: ${cafe.rating} (${cafe.reviewCount} review)
+⭐ Rating: ${(_latestRating ?? cafe.rating).toStringAsFixed(1)} (${_latestReviewCount ?? cafe.reviewCount} review)
 
 🕒 Jam buka:
 ${cafe.openHours}
@@ -340,28 +356,7 @@ Temukan cafe menarik lainnya melalui aplikasi NgopiYuk!
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: primaryColor, size: 18),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${cafe.rating}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '(${cafe.reviewCount} review)',
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
+                  _buildRatingRow(cafe),
                   const SizedBox(height: 16),
                   Wrap(
                     spacing: 8,
@@ -506,7 +501,7 @@ Temukan cafe menarik lainnya melalui aplikasi NgopiYuk!
               }
 
               return SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final menu = menus[index];
@@ -526,6 +521,8 @@ Temukan cafe menarik lainnya melalui aplikasi NgopiYuk!
               );
             },
           ),
+
+          SliverToBoxAdapter(child: CafeReviewsSection(cafe: cafe)),
         ],
       ),
       bottomNavigationBar: Container(
@@ -573,6 +570,47 @@ Temukan cafe menarik lainnya melalui aplikasi NgopiYuk!
           ],
         ),
       ),
+    );
+  }
+
+  // Baris rating di header: mengikuti perubahan dokumen kafe secara langsung.
+  // StreamBuilder hanya membangun ulang baris ini, bukan seluruh halaman.
+  Widget _buildRatingRow(Cafe cafe) {
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: _cafeRef.snapshots(),
+      builder: (context, snapshot) {
+        double rating = cafe.rating;
+        int reviewCount = cafe.reviewCount;
+
+        final data = snapshot.data?.data();
+        if (data != null) {
+          rating = (data['rating'] as num?)?.toDouble() ?? rating;
+          reviewCount = (data['reviewCount'] as num?)?.toInt() ?? reviewCount;
+        }
+
+        _latestRating = rating;
+        _latestReviewCount = reviewCount;
+
+        return Row(
+          children: [
+            const Icon(Icons.star, color: primaryColor, size: 18),
+            const SizedBox(width: 4),
+            Text(
+              rating.toStringAsFixed(1),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '($reviewCount review)',
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ],
+        );
+      },
     );
   }
 

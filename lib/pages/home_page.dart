@@ -564,7 +564,13 @@ Future<void> _toggleFavorite(String cafeName) async {
           onToggleFavorite: () => _toggleFavorite(cafe.name),
         ),
       ),
-    );
+    ).then((_) => _refreshCafes());
+  }
+
+  // Muat ulang data kafe agar rating & jumlah ulasan di kartu ikut berubah
+  // setelah pengguna kembali dari halaman detail / daftar / pencarian.
+  void _refreshCafes() {
+    if (mounted) _loadData();
   }
 
   void _openFavorites() {
@@ -588,7 +594,7 @@ Future<void> _toggleFavorite(String cafeName) async {
           onToggleFavorite: _toggleFavorite,
         ),
       ),
-    );
+    ).then((_) => _refreshCafes());
   }
 
   void _openTopRatedPage() {
@@ -602,7 +608,7 @@ Future<void> _toggleFavorite(String cafeName) async {
           onToggleFavorite: _toggleFavorite,
         ),
       ),
-    );
+    ).then((_) => _refreshCafes());
   }
 
   void _openAllCafesPage() {
@@ -616,7 +622,7 @@ Future<void> _toggleFavorite(String cafeName) async {
           onToggleFavorite: _toggleFavorite,
         ),
       ),
-    );
+    ).then((_) => _refreshCafes());
   }
 
   void _showComingSoon(String title) {

@@ -1,4 +1,3 @@
-
 import 'package:material_ui/material_ui.dart';
 
 import '../models/cafe.dart';
@@ -105,6 +104,7 @@ debugPrint('====================================');
     ).then((_) {
       if (mounted) {
         setState(() {});
+        _loadData(); // muat ulang agar rating terbaru tampil
       }
     });
   }

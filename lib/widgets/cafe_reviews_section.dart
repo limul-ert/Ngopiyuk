@@ -4,6 +4,65 @@ import 'package:material_ui/material_ui.dart';
 
 import '../models/cafe.dart';
 
+/// Menyimpan / menghapus ulasan sekaligus memperbarui agregat di dokumen kafe
+/// (rating, reviewCount, ratingTotal) dalam SATU transaksi.
+///
+/// [newRating] == null berarti hapus ulasan.
+Future<void> _applyReview({
+  required DocumentReference<Map<String, dynamic>> cafeRef,
+  required DocumentReference<Map<String, dynamic>> reviewRef,
+  int? newRating,
+  Map<String, dynamic>? reviewData,
+}) {
+  return FirebaseFirestore.instance.runTransaction((tx) async {
+    // Semua pembacaan harus dilakukan sebelum penulisan.
+    final cafeSnap = await tx.get(cafeRef);
+    final reviewSnap = await tx.get(reviewRef);
+
+    final int? oldRating =
+        reviewSnap.exists ? (reviewSnap.data()?['rating'] as num?)?.toInt() : null;
+
+    if (newRating == null) {
+      if (!reviewSnap.exists) return;
+      tx.delete(reviewRef);
+    } else {
+      tx.set(reviewRef, reviewData!);
+    }
+
+    // Dokumen kafe belum ada (mis. data dummy) -> lewati agregat.
+    if (!cafeSnap.exists) return;
+
+    final data = cafeSnap.data()!;
+    int count = (data['reviewCount'] as num?)?.toInt() ?? 0;
+    final double oldAvg = (data['rating'] as num?)?.toDouble() ?? 0.0;
+
+    // Jika ratingTotal belum ada, turunkan dari data lama (rating x jumlah).
+    double total = (data['ratingTotal'] as num?)?.toDouble() ?? (oldAvg * count);
+
+    if (oldRating != null) {
+      total -= oldRating;
+      count -= 1;
+    }
+    if (newRating != null) {
+      total += newRating;
+      count += 1;
+    }
+
+    if (count <= 0) {
+      count = 0;
+      total = 0;
+    }
+
+    final double avg = count == 0 ? 0.0 : total / count;
+
+    tx.update(cafeRef, {
+      'ratingTotal': total,
+      'reviewCount': count,
+      'rating': double.parse(avg.toStringAsFixed(1)),
+    });
+  });
+}
+
 /// Bagian "Ulasan" untuk halaman detail cafe.
 ///
 /// Data disimpan di Firestore: cafes/{idCafe}/reviews/{uidUser}
@@ -25,17 +84,17 @@ class _CafeReviewsSectionState extends State<CafeReviewsSection> {
 
   bool _showAll = false;
 
-  CollectionReference<Map<String, dynamic>> get _reviews {
+  DocumentReference<Map<String, dynamic>> get _cafeRef {
     final cafe = widget.cafe;
     final docId = (cafe.id != null && cafe.id!.isNotEmpty)
         ? cafe.id!
         : Uri.encodeComponent(cafe.name);
 
-    return FirebaseFirestore.instance
-        .collection('cafes')
-        .doc(docId)
-        .collection('reviews');
+    return FirebaseFirestore.instance.collection('cafes').doc(docId);
   }
+
+  CollectionReference<Map<String, dynamic>> get _reviews =>
+      _cafeRef.collection('reviews');
 
   String get _myUid => FirebaseAuth.instance.currentUser?.uid ?? '';
 
@@ -62,6 +121,7 @@ class _CafeReviewsSectionState extends State<CafeReviewsSection> {
       ),
       builder: (_) => _ReviewForm(
         cafeName: widget.cafe.name,
+        cafeRef: _cafeRef,
         reviews: _reviews,
         existing: existing,
       ),
@@ -70,7 +130,10 @@ class _CafeReviewsSectionState extends State<CafeReviewsSection> {
 
   Future<void> _deleteMine() async {
     try {
-      await _reviews.doc(_myUid).delete();
+      await _applyReview(
+        cafeRef: _cafeRef,
+        reviewRef: _reviews.doc(_myUid),
+      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -109,7 +172,7 @@ class _CafeReviewsSectionState extends State<CafeReviewsSection> {
           if (data.isNotEmpty) {
             final total = data.fold<double>(
               0,
-              (sum, r) => sum + ((r['rating'] as num?) ?? 0).toDouble(),
+              (acc, r) => acc + ((r['rating'] as num?) ?? 0).toDouble(),
             );
             average = total / data.length;
           }
@@ -286,11 +349,13 @@ class _CafeReviewsSectionState extends State<CafeReviewsSection> {
 // ============================================
 class _ReviewForm extends StatefulWidget {
   final String cafeName;
+  final DocumentReference<Map<String, dynamic>> cafeRef;
   final CollectionReference<Map<String, dynamic>> reviews;
   final Map<String, dynamic>? existing;
 
   const _ReviewForm({
     required this.cafeName,
+    required this.cafeRef,
     required this.reviews,
     this.existing,
   });
@@ -354,13 +419,18 @@ class _ReviewFormState extends State<_ReviewForm> {
     try {
       final name = await _userName(user);
 
-      await widget.reviews.doc(user.uid).set({
-        'userId': user.uid,
-        'userName': name,
-        'rating': _rating,
-        'comment': _comment.text.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      await _applyReview(
+        cafeRef: widget.cafeRef,
+        reviewRef: widget.reviews.doc(user.uid),
+        newRating: _rating,
+        reviewData: {
+          'userId': user.uid,
+          'userName': name,
+          'rating': _rating,
+          'comment': _comment.text.trim(),
+          'createdAt': FieldValue.serverTimestamp(),
+        },
+      );
 
       if (!mounted) return;
       Navigator.pop(context);
